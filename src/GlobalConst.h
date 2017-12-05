@@ -154,7 +154,7 @@
 
 //// Registry
 
-#define	GC_REG_COMPANY_NAME			"SoftEther VPN Developer Edition"
+#define	GC_REG_COMPANY_NAME			"SoftEther EtherLogger Developer Edition"
 
 
 
