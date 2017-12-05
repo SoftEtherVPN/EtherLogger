@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo '---------------------------------------------------------------------'
-echo 'SoftEther VPN for Unix'
+echo 'SoftEther EtherLogger for Unix'
 echo
 echo 'Copyright (c) SoftEther VPN Project at University of Tsukuba, Japan.'
 echo 'Copyright (c) Daiyuu Nobori. All Rights Reserved.'
@@ -109,4 +109,4 @@ esac
 
 cp src/makefiles/${OS}_${CPU}.mak Makefile
 
-echo "The Makefile is generated. Run 'make' to build SoftEther VPN."
+echo "The Makefile is generated. Run 'make' to build SoftEther EtherLogger."
