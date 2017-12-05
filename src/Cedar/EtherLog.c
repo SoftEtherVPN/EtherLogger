@@ -898,34 +898,172 @@ bool ElSetCaptureDeviceLogSetting(EL *e, char *name, HUB_LOG *log)
 // Confirm whether the beta version has expired
 bool ElIsBetaExpired()
 {
-	SYSTEMTIME st;
-	UINT64 expires64;
-	UINT64 now64;
-	if (ELOG_IS_BETA == false)
-	{
-		return false;
-	}
-
-	Zero(&st, sizeof(st));
-
-	st.wYear = ELOG_BETA_EXPIRES_YEAR;
-	st.wMonth = ELOG_BETA_EXPIRES_MONTH;
-	st.wDay = ELOG_BETA_EXPIRES_DAY;
-
-	expires64 = SystemToUINT64(&st);
-	now64 = LocalTime64();
-
-	if (now64 >= expires64)
-	{
-		return true;
-	}
-
 	return false;
 }
 
 // Capture thread
 void ElCaptureThread(THREAD *thread, void *param)
 {
+	EL_DEVICE *d;
+	LOG *log;
+	char logdirname[MAX_SIZE];
+	char tmp[MAX_SIZE];
+	ETH *eth = NULL;
+	UINT64 last_check_time = 0;
+	UINT64 last_license_check_time = 0;
+	UINT last_check_num = 0;
+	bool is_beta_expired = false;
+	// Validate arguments
+	if (thread == NULL || param == NULL)
+	{
+		return;
+	}
+
+	d = (EL_DEVICE *)param;
+	d->Cancel1 = NewCancel();
+
+	NoticeThreadInit(thread);
+
+	// Initialize the log file
+	ConvertSafeFileName(logdirname, sizeof(logdirname), d->DeviceName);
+	MakeDir(EL_PACKET_LOG_DIR_NAME);
+	Format(tmp, sizeof(tmp), EL_PACKET_LOG_FILE_NAME, logdirname);
+
+	log = NewLog(tmp, EL_PACKET_LOG_PREFIX, d->LogSetting.PacketLogSwitchType);
+
+	d->Logger = log;
+
+	d->Active = false;
+	d->Cancel2 = NULL;
+	eth = NULL;
+
+	// Capture loop
+	while (d->Halt == false)
+	{
+		Select(NULL, eth == NULL ? 100 : SELECT_TIME,
+			d->Cancel1, d->Cancel2);
+
+		// Update the license status periodically
+		if ((last_license_check_time + EL_LICENSE_CHECK_SPAN) <= Tick64())
+		{
+			ElParseCurrentLicenseStatus(d->el->LicenseSystem, d->el->LicenseStatus);
+			last_license_check_time = Tick64();
+
+			// Inspect whether the beta expired
+			// (always false for product version)
+			is_beta_expired = ElIsBetaExpired();
+		}
+
+		if (eth == NULL)
+		{
+			// Attempt to get the Ethernet device periodically
+			eth = OpenEth(d->DeviceName, d->NoPromiscus, false, NULL);
+			if (eth != NULL)
+			{
+				d->Active = true;
+				d->Cancel2 = EthGetCancel(eth);
+				last_check_time = Tick64();
+				last_check_num = GetEthDeviceHash();
+			}
+		}
+		else
+		{
+			void *data;
+			UINT ret;
+			// Check the number of Ethernet device periodically
+			if ((last_check_time + BRIDGE_NUM_DEVICE_CHECK_SPAN) <= Tick64())
+			{
+				if (last_check_num != GetEthDeviceHash())
+				{
+					// The number of devices changes
+					CloseEth(eth);
+					ReleaseCancel(d->Cancel2);
+					d->Cancel2 = NULL;
+					eth = NULL;
+					d->Active = false;
+					continue;
+				}
+				else
+				{
+					last_check_time = Tick64();
+				}
+			}
+
+			// Get a packet
+			while (true)
+			{
+				ret = EthGetPacket(eth, &data);
+				if (ret == INFINITE)
+				{
+					// Device error
+					CloseEth(eth);
+					ReleaseCancel(d->Cancel2);
+					d->Cancel2 = NULL;
+					eth = NULL;
+					d->Active = false;
+					break;
+				}
+				else if (ret == 0)
+				{
+					// No packet
+					break;
+				}
+				else
+				{
+					PKT *p = ParsePacket((UCHAR *)data, ret);
+
+					if (p != NULL)
+					{
+						UINT level;
+
+						if ((ELOG_IS_BETA == false) && (d->el->LicenseStatus->Valid == false))
+						{
+							// If any license is not registered, do not save the log
+							level = PACKET_LOG_NONE;
+						}
+						else
+						{
+							// Determine the logging level of packet
+							level = CalcPacketLoggingLevelEx(&d->LogSetting, p);
+						}
+
+						if (is_beta_expired)
+						{
+							// Suspend the logging if the beta version has expired
+							level = PACKET_LOG_NONE;
+						}
+
+						if (level != PACKET_LOG_NONE && log->RecordQueue->num_item < MAX_LOGGING_QUEUE_LEN)
+						{
+							PACKET_LOG *pl;
+
+							// Insert to the log
+							pl = ZeroMalloc(sizeof(PACKET_LOG));
+							pl->Cedar = d->el->Cedar;
+							pl->Packet = ClonePacket(p, level == PACKET_LOG_ALL ? true : false);
+
+							InsertRecord(log, pl, PacketLogParseProc);
+						}
+
+						FreePacket(p);
+						Free(data);
+					}
+				}
+			}
+		}
+	}
+
+	if (eth != NULL)
+	{
+		CloseEth(eth);
+		ReleaseCancel(d->Cancel2);
+	}
+
+	// Stop Logging
+	FreeLog(log);
+	d->Logger = NULL;
+
+	ReleaseCancel(d->Cancel1);
 }
 
 // Delete the capture device

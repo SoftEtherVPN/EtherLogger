@@ -21,6 +21,7 @@ src/tmp/*
 !src/bin/hamcore/*
 src/bin/hamcore/PenCore.dll
 src/bin/*.config
+src/bin/*_log/*
 src/bin/hamcore/PenCore_x64.dll
 src/bin/hamcore/see.dll
 src/bin/hamcore/see_x64.dll
