@@ -237,6 +237,15 @@ struct UDP_HEADER
 	USHORT	Checksum;				// Checksum
 } GCC_PACKED;
 
+// VXLAN Header
+struct VXLAN_HEADER
+{
+	UCHAR A;
+	UCHAR Reserved[3];
+	UCHAR Vid[3];
+	UCHAR Reserved2;
+} GCC_PACKED;
+
 // UDPv4 pseudo header
 struct UDPV4_PSEUDO_HEADER
 {
@@ -670,7 +679,13 @@ struct PKT
 	UINT			Delay;			// Delay
 	UINT			Jitter;			// Jitter
 	UINT			Loss;			// Packet loss
-	UINT			StrippedVlanId;
+	UINT			StrippedVlanId1;
+	UINT			StrippedVlanId2;
+	UINT			StrippedVlanId3;
+	UINT			StrippedVlanId4;
+	UINT			StrippedVxlanId;
+	IP				StrippedVxlanSrc;
+	IP				StrippedVxlanDst;
 	UINT64			DelayedForwardTick;	// Sending time in case of delayed
 	struct SESSION	*DelayedSrcSession;	// Source session
 	UINT			TypeL3;			// Layer-3 packet classification

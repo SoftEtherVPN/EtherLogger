@@ -1706,7 +1706,14 @@ PKT *ClonePacket(PKT *p, bool copy_data)
 		ret->HttpLog = Clone(p->HttpLog, sizeof(HTTPLOG));
 	}
 
-	ret->StrippedVlanId = p->StrippedVlanId;
+	ret->StrippedVlanId1 = p->StrippedVlanId1;
+	ret->StrippedVlanId2 = p->StrippedVlanId2;
+	ret->StrippedVlanId3 = p->StrippedVlanId3;
+	ret->StrippedVlanId4 = p->StrippedVlanId4;
+
+	ret->StrippedVxlanId = p->StrippedVxlanId;
+	ret->StrippedVxlanSrc = p->StrippedVxlanSrc;
+	ret->StrippedVxlanDst = p->StrippedVxlanDst;
 
 	return ret;
 }
@@ -1756,6 +1763,7 @@ PKT *ParsePacketEx5(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool b
 
 	if (strip_vlan)
 	{
+		// VLAN
 		if (size >= 19)
 		{
 			if (buf[12] == ((UCHAR *)&vlan_type_id_16)[0] && buf[13] == ((UCHAR *)&vlan_type_id_16)[1])
@@ -1768,7 +1776,89 @@ PKT *ParsePacketEx5(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool b
 				memmove(&buf[12], &buf[16], size - 16);
 				size -= 4;
 
-				stripped_vlan_id = vlan_ushort;
+				p->StrippedVlanId1 = vlan_ushort;
+			}
+		}
+
+		// VLAN
+		if (size >= 19)
+		{
+			if (buf[12] == ((UCHAR *)&vlan_type_id_16)[0] && buf[13] == ((UCHAR *)&vlan_type_id_16)[1])
+			{
+				USHORT vlan_ushort = 0;
+
+				vlan_ushort = READ_USHORT(&buf[14]);
+				vlan_ushort = vlan_ushort & 0xFFF;
+
+				memmove(&buf[12], &buf[16], size - 16);
+				size -= 4;
+
+				p->StrippedVlanId2 = vlan_ushort;
+			}
+		}
+
+		// VXLAN
+		if (size >= 14 + 40 + 8 + 8 + 14)
+		{
+			if (buf[13] == 0x86 && buf[14] == 0xDD)
+			{
+				// IPv6
+				IPV6_HEADER *v6 = (IPV6_HEADER *)&buf[14];
+				if (IPV6_GET_VERSION(v6) == 6)
+				{
+					if (v6->NextHeader == IP_PROTO_UDP)
+					{
+						UDP_HEADER *udp = (UDP_HEADER *)&buf[14 + 40];
+						if (Endian16(udp->DstPort) == 4782 || Endian16(udp->DstPort) == 4789)
+						{
+							VXLAN_HEADER *vxlan = (VXLAN_HEADER *)&buf[14 + 40 + 8];
+							UINT vid = READ_UINT(&vxlan->Reserved[2]);
+							vid = vid & 0xFFFFFF;
+
+							p->StrippedVxlanId = vid;
+
+							IPv6AddrToIP(&p->StrippedVxlanSrc, &v6->SrcAddress);
+							IPv6AddrToIP(&p->StrippedVxlanDst, &v6->DestAddress);
+
+							memmove(&buf[14], &buf[14 + 40 + 8 + 8], size - (14 + 40 + 8 + 8));
+							size -= (40 + 8 + 8);
+						}
+					}
+				}
+			}
+		}
+
+		// VLAN
+		if (size >= 19)
+		{
+			if (buf[12] == ((UCHAR *)&vlan_type_id_16)[0] && buf[13] == ((UCHAR *)&vlan_type_id_16)[1])
+			{
+				USHORT vlan_ushort = 0;
+
+				vlan_ushort = READ_USHORT(&buf[14]);
+				vlan_ushort = vlan_ushort & 0xFFF;
+
+				memmove(&buf[12], &buf[16], size - 16);
+				size -= 4;
+
+				p->StrippedVlanId3 = vlan_ushort;
+			}
+		}
+
+		// VLAN
+		if (size >= 19)
+		{
+			if (buf[12] == ((UCHAR *)&vlan_type_id_16)[0] && buf[13] == ((UCHAR *)&vlan_type_id_16)[1])
+			{
+				USHORT vlan_ushort = 0;
+
+				vlan_ushort = READ_USHORT(&buf[14]);
+				vlan_ushort = vlan_ushort & 0xFFF;
+
+				memmove(&buf[12], &buf[16], size - 16);
+				size -= 4;
+
+				p->StrippedVlanId4 = vlan_ushort;
 			}
 		}
 	}
@@ -1854,8 +1944,6 @@ PKT *ParsePacketEx5(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool b
 
 	p->MacAddressSrc = p->MacHeader->SrcAddress;
 	p->MacAddressDest = p->MacHeader->DestAddress;
-
-	p->StrippedVlanId = stripped_vlan_id;
 
 	if (bridge_id_as_mac_address)
 	{

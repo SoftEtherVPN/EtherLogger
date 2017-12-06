@@ -1531,7 +1531,10 @@ char *PacketLogParseProc(RECORD *rec)
 	{
 		t->NumTokens += 2;
 	}
-	t->NumTokens += 1;
+
+	t->NumTokens += 7;
+
+
 	t->Token = ZeroMalloc(sizeof(char *) * t->NumTokens);
 
 	// Source session
@@ -2079,11 +2082,46 @@ char *PacketLogParseProc(RECORD *rec)
 		}
 
 		// VLAN
-		if (p->StrippedVlanId != 0)
+		if (p->StrippedVlanId1 != 0)
 		{
 			char tmp[64];
-			snprintf(tmp, sizeof(tmp), "%u", p->StrippedVlanId);
+			snprintf(tmp, sizeof(tmp), "%u", p->StrippedVlanId1);
 			t->Token[18] = CopyStr(tmp);
+		}
+		// VLAN
+		if (p->StrippedVlanId2 != 0)
+		{
+			char tmp[64];
+			snprintf(tmp, sizeof(tmp), "%u", p->StrippedVlanId2);
+			t->Token[19] = CopyStr(tmp);
+		}
+		// VLAN
+		if (p->StrippedVlanId3 != 0)
+		{
+			char tmp[64];
+			snprintf(tmp, sizeof(tmp), "%u", p->StrippedVlanId3);
+			t->Token[20] = CopyStr(tmp);
+		}
+		// VLAN
+		if (p->StrippedVlanId4 != 0)
+		{
+			char tmp[64];
+			snprintf(tmp, sizeof(tmp), "%u", p->StrippedVlanId4);
+			t->Token[21] = CopyStr(tmp);
+		}
+
+		if (p->StrippedVxlanId != 0)
+		{
+			char tmp[64];
+
+			IPToStr(tmp, sizeof(tmp), &p->StrippedVxlanSrc);
+			t->Token[22] = CopyStr(tmp);
+
+			IPToStr(tmp, sizeof(tmp), &p->StrippedVxlanDst);
+			t->Token[23] = CopyStr(tmp);
+
+			snprintf(tmp, sizeof(tmp), "%u", p->StrippedVxlanId);
+			t->Token[24] = CopyStr(tmp);
 		}
 	}
 	else
