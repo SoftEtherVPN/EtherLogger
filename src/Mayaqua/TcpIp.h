@@ -670,6 +670,7 @@ struct PKT
 	UINT			Delay;			// Delay
 	UINT			Jitter;			// Jitter
 	UINT			Loss;			// Packet loss
+	UINT			StrippedVlanId;
 	UINT64			DelayedForwardTick;	// Sending time in case of delayed
 	struct SESSION	*DelayedSrcSession;	// Source session
 	UINT			TypeL3;			// Layer-3 packet classification
@@ -849,6 +850,7 @@ PKT *ParsePacketEx(UCHAR *buf, UINT size, bool no_l3);
 PKT *ParsePacketEx2(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id);
 PKT *ParsePacketEx3(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool bridge_id_as_mac_address);
 PKT *ParsePacketEx4(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool bridge_id_as_mac_address, bool no_http, bool correct_checksum);
+PKT *ParsePacketEx5(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool bridge_id_as_mac_address, bool no_http, bool correct_checksum, bool strip_vlan);
 void FreePacket(PKT *p);
 void FreePacketWithData(PKT *p);
 void FreePacketIPv4(PKT *p);

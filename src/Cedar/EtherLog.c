@@ -1010,7 +1010,7 @@ void ElCaptureThread(THREAD *thread, void *param)
 				}
 				else
 				{
-					PKT *p = ParsePacket((UCHAR *)data, ret);
+					PKT *p = ParsePacketEx5((UCHAR *)data, ret, false, 0, false, false, false, true);
 
 					if (p != NULL)
 					{

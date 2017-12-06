@@ -1706,6 +1706,8 @@ PKT *ClonePacket(PKT *p, bool copy_data)
 		ret->HttpLog = Clone(p->HttpLog, sizeof(HTTPLOG));
 	}
 
+	ret->StrippedVlanId = p->StrippedVlanId;
+
 	return ret;
 }
 
@@ -1728,8 +1730,13 @@ PKT *ParsePacketEx3(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool b
 }
 PKT *ParsePacketEx4(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool bridge_id_as_mac_address, bool no_http, bool correct_checksum)
 {
+	return ParsePacketEx5(buf, size, no_l3, vlan_type_id, bridge_id_as_mac_address, no_http, correct_checksum, false);
+}
+PKT *ParsePacketEx5(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool bridge_id_as_mac_address, bool no_http, bool correct_checksum, bool strip_vlan)
+{
 	PKT *p;
 	USHORT vlan_type_id_16;
+	USHORT stripped_vlan_id = 0;
 	// Validate arguments
 	if (buf == NULL || size == 0)
 	{
@@ -1746,6 +1753,25 @@ PKT *ParsePacketEx4(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool b
 	p = ZeroMallocFast(sizeof(PKT));
 
 	p->VlanTypeID = vlan_type_id;
+
+	if (strip_vlan)
+	{
+		if (size >= 19)
+		{
+			if (buf[12] == ((UCHAR *)&vlan_type_id_16)[0] && buf[13] == ((UCHAR *)&vlan_type_id_16)[1])
+			{
+				USHORT vlan_ushort = 0;
+
+				vlan_ushort = READ_USHORT(&buf[14]);
+				vlan_ushort = vlan_ushort & 0xFFF;
+
+				memmove(&buf[12], &buf[16], size - 16);
+				size -= 4;
+
+				stripped_vlan_id = vlan_ushort;
+			}
+		}
+	}
 
 	// If there is garbage after the payload in IPv4 and IPv6 packets, eliminate it
 	if (size >= 24)
@@ -1828,6 +1854,8 @@ PKT *ParsePacketEx4(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool b
 
 	p->MacAddressSrc = p->MacHeader->SrcAddress;
 	p->MacAddressDest = p->MacHeader->DestAddress;
+
+	p->StrippedVlanId = stripped_vlan_id;
 
 	if (bridge_id_as_mac_address)
 	{

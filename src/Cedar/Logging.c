@@ -1527,10 +1527,11 @@ char *PacketLogParseProc(RECORD *rec)
 	// Generate each part
 	t = ZeroMalloc(sizeof(TOKEN_LIST));
 	t->NumTokens = 16;
-	if (pl->WritePhysicalIP)
+	//if (pl->WritePhysicalIP)
 	{
 		t->NumTokens += 2;
 	}
+	t->NumTokens += 1;
 	t->Token = ZeroMalloc(sizeof(char *) * t->NumTokens);
 
 	// Source session
@@ -2076,6 +2077,14 @@ char *PacketLogParseProc(RECORD *rec)
 		{
 			t->Token[17] = CopyStr(pl->DestPhysicalIP);
 		}
+
+		// VLAN
+		if (p->StrippedVlanId != 0)
+		{
+			char tmp[64];
+			snprintf(tmp, sizeof(tmp), "%u", p->StrippedVlanId);
+			t->Token[18] = CopyStr(tmp);
+		}
 	}
 	else
 	{
@@ -2199,7 +2208,7 @@ char *GenCsvLine(TOKEN_LIST *t)
 			ReplaceForCsv(t->Token[i]);
 			if (StrLen(t->Token[i]) == 0)
 			{
-				WriteBuf(b, "-", 1);
+				//WriteBuf(b, "-", 1);
 			}
 			else
 			{
@@ -2208,7 +2217,7 @@ char *GenCsvLine(TOKEN_LIST *t)
 		}
 		else
 		{
-			WriteBuf(b, "-", 1);
+			//WriteBuf(b, "-", 1);
 		}
 		if (i != (t->NumTokens - 1))
 		{
