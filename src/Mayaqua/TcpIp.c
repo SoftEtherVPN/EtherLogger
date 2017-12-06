@@ -1715,6 +1715,9 @@ PKT *ClonePacket(PKT *p, bool copy_data)
 	ret->StrippedVxlanSrc = p->StrippedVxlanSrc;
 	ret->StrippedVxlanDst = p->StrippedVxlanDst;
 
+	Copy(ret->StrippedVxlanMacSrc, p->StrippedVxlanMacSrc, 6);
+	Copy(ret->StrippedVxlanMacDst, p->StrippedVxlanMacDst, 6);
+
 	return ret;
 }
 
@@ -1800,7 +1803,7 @@ PKT *ParsePacketEx5(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool b
 		// VXLAN
 		if (size >= 14 + 40 + 8 + 8 + 14)
 		{
-			if (buf[13] == 0x86 && buf[14] == 0xDD)
+			if (buf[12] == 0x86 && buf[13] == 0xDD)
 			{
 				// IPv6
 				IPV6_HEADER *v6 = (IPV6_HEADER *)&buf[14];
@@ -1820,8 +1823,11 @@ PKT *ParsePacketEx5(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool b
 							IPv6AddrToIP(&p->StrippedVxlanSrc, &v6->SrcAddress);
 							IPv6AddrToIP(&p->StrippedVxlanDst, &v6->DestAddress);
 
-							memmove(&buf[14], &buf[14 + 40 + 8 + 8], size - (14 + 40 + 8 + 8));
-							size -= (40 + 8 + 8);
+							Copy(p->StrippedVxlanMacDst, &buf[0], 6);
+							Copy(p->StrippedVxlanMacSrc, &buf[6], 6);
+
+							memmove(&buf[0], &buf[14 + 40 + 8 + 8], size - (14 + 40 + 8 + 8));
+							size -= (14 + 40 + 8 + 8);
 						}
 					}
 				}

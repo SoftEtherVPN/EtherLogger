@@ -686,6 +686,10 @@ struct PKT
 	UINT			StrippedVxlanId;
 	IP				StrippedVxlanSrc;
 	IP				StrippedVxlanDst;
+	UCHAR           StrippedVxlanMacSrc[6];
+	UCHAR			Padding01[2];
+	UCHAR           StrippedVxlanMacDst[6];
+	UCHAR			Padding02[2];
 	UINT64			DelayedForwardTick;	// Sending time in case of delayed
 	struct SESSION	*DelayedSrcSession;	// Source session
 	UINT			TypeL3;			// Layer-3 packet classification

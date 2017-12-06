@@ -1046,8 +1046,9 @@ void ElCaptureThread(THREAD *thread, void *param)
 						}
 
 						FreePacket(p);
-						Free(data);
 					}
+
+					Free(data);
 				}
 			}
 		}

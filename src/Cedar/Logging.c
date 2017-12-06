@@ -1437,6 +1437,8 @@ char *BuildHttpLogStr(HTTPLOG *h)
 	AddLogBufToStr(b, "HttpReferer", h->Referer);
 	AddLogBufToStr(b, "HttpUserAgent", h->UserAgent);
 
+	WriteBuf(b, " ", 1);
+
 	WriteBuf(b, &nullchar, 1);
 
 	ret = CopyStr(b->Buf);
@@ -1532,7 +1534,7 @@ char *PacketLogParseProc(RECORD *rec)
 		t->NumTokens += 2;
 	}
 
-	t->NumTokens += 7;
+	t->NumTokens += 9;
 
 
 	t->Token = ZeroMalloc(sizeof(char *) * t->NumTokens);
@@ -2122,6 +2124,12 @@ char *PacketLogParseProc(RECORD *rec)
 
 			snprintf(tmp, sizeof(tmp), "%u", p->StrippedVxlanId);
 			t->Token[24] = CopyStr(tmp);
+
+			BinToStr(tmp, sizeof(tmp), p->StrippedVxlanMacSrc, 6);
+			t->Token[25] = CopyStr(tmp);
+
+			BinToStr(tmp, sizeof(tmp), p->StrippedVxlanMacDst, 6);
+			t->Token[26] = CopyStr(tmp);
 		}
 	}
 	else
@@ -2281,8 +2289,6 @@ void ReplaceForCsv(char *str)
 		return;
 	}
 
-	// If there are blanks, trim it
-	Trim(str);
 	len = StrLen(str);
 
 	for (i = 0;i < len;i++)
