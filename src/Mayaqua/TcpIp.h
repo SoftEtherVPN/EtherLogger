@@ -228,6 +228,18 @@ struct IPV4_HEADER
 #define	IP_PROTO_L2TPV3		115		// L2TPv3 protocol
 
 
+// L2TP header
+struct L2TP_PPP_HEADER
+{
+	USHORT PacketType;
+	USHORT Length;
+	USHORT TunnelId;
+	USHORT SessionId;
+	UCHAR Address;
+	UCHAR Control;
+	USHORT Protocol;
+} GCC_PACKED;
+
 // UDP header
 struct UDP_HEADER
 {
@@ -658,7 +670,7 @@ struct PPPOE_HEADER
 	USHORT SessionId;
 	USHORT PayloadLength;
 	USHORT PPP_ProtocolId;
-};
+} GCC_PACKED;
 
 // HTTPLOG data structure
 struct HTTPLOG
@@ -701,6 +713,11 @@ struct PKT
 	UCHAR           StrippedVxlanMacDst[6];
 	UCHAR			Padding02[2];
 	UINT			StrippedPPPoESessionId;
+	bool			IsL2TP;
+	UINT			StrippedL2TPTunnelId;
+	UINT			StrippedL2TPSessionId;
+	IP				StrippedL2TPSrc;
+	IP				StrippedL2TPDst;
 	UINT64			DelayedForwardTick;	// Sending time in case of delayed
 	struct SESSION	*DelayedSrcSession;	// Source session
 	UINT			TypeL3;			// Layer-3 packet classification

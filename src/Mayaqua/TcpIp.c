@@ -1721,6 +1721,15 @@ PKT *ClonePacket(PKT *p, bool copy_data)
 
 	ret->StrippedPPPoESessionId = p->StrippedPPPoESessionId;
 
+	if (p->IsL2TP)
+	{
+		ret->IsL2TP = true;
+		ret->StrippedL2TPTunnelId = p->StrippedL2TPTunnelId;
+		ret->StrippedL2TPSessionId = p->StrippedL2TPSessionId;
+		ret->StrippedL2TPSrc = p->StrippedL2TPSrc;
+		ret->StrippedL2TPDst = p->StrippedL2TPDst;
+	}
+
 	Copy(ret->StrippedVxlanMacSrc, p->StrippedVxlanMacSrc, 6);
 	Copy(ret->StrippedVxlanMacDst, p->StrippedVxlanMacDst, 6);
 
@@ -1857,6 +1866,75 @@ PKT *ParsePacketEx5(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool b
 						memmove(&buf[14], &buf[14 + 8], size - (14 + 8));
 						size -= 8;
 						p->StrippedPPPoESessionId = session;
+					}
+				}
+			}
+		}
+
+		// L2TP
+		if (size >= 14 + 20 + 8 + 8 + 4 + 20)
+		{
+			if (buf[12] == 0x08 && buf[13] == 0x00)
+			{
+				IPV4_HEADER *ipv4 = (IPV4_HEADER *)(&buf[14]);
+				if (IPV4_GET_VERSION(ipv4) == 4 && (IPV4_GET_HEADER_LEN(ipv4) * 4 == 20) && (IPV4_GET_OFFSET(ipv4) == 0))
+				{
+					UDP_HEADER *udp = (UDP_HEADER *)(&buf[14] + sizeof(IPV4_HEADER));
+					if (Endian16(udp->DstPort) == 1701 || Endian16(udp->SrcPort) == 1701)
+					{
+						L2TP_PPP_HEADER *l2tp = (L2TP_PPP_HEADER *)(&buf[14] + sizeof(IPV4_HEADER) + sizeof(UDP_HEADER));
+
+						if (l2tp->Address = 0xff && l2tp->Control == 0x03)
+						{
+							USHORT protocol = Endian16(l2tp->Protocol);
+							USHORT tunnel = Endian16(l2tp->TunnelId);
+							USHORT session = Endian16(l2tp->SessionId);
+							UINT ip_ver = 0;
+
+							if (protocol == 0x0021)
+							{
+								// IPv4
+								IPV4_HEADER *tmp_hdr = (IPV4_HEADER *)(&buf[14 + sizeof(IPV4_HEADER) + sizeof(UDP_HEADER) + sizeof(L2TP_PPP_HEADER)]);
+								if (IPV4_GET_VERSION(tmp_hdr) == 4)
+								{
+									ip_ver = 4;
+								}
+							}
+							else if (protocol == 0x0057)
+							{
+								// IPv6
+								IPV4_HEADER *tmp_hdr = (IPV4_HEADER *)(&buf[14 + sizeof(IPV4_HEADER) + sizeof(UDP_HEADER) + sizeof(L2TP_PPP_HEADER)]);
+								if (IPV4_GET_VERSION(tmp_hdr) == 6)
+								{
+									ip_ver = 6;
+								}
+							}
+
+							if (ip_ver != 0)
+							{
+								switch (ip_ver)
+								{
+								case 4:
+									buf[12] = 0x08;
+									buf[13] = 0x00;
+									break;
+
+								case 6:
+									buf[12] = 0x86;
+									buf[13] = 0xDD;
+									break;
+								}
+
+								p->IsL2TP = true;
+								p->StrippedL2TPTunnelId = tunnel;
+								p->StrippedL2TPSessionId = session;
+								UINTToIP(&p->StrippedL2TPSrc, ipv4->SrcIP);
+								UINTToIP(&p->StrippedL2TPDst, ipv4->DstIP);
+
+								memmove(&buf[14], &buf[14 + sizeof(IPV4_HEADER) + sizeof(UDP_HEADER) + sizeof(L2TP_PPP_HEADER)], size - (14 + sizeof(IPV4_HEADER) + sizeof(UDP_HEADER) + sizeof(L2TP_PPP_HEADER)));
+								size -= sizeof(IPV4_HEADER) + sizeof(UDP_HEADER) + sizeof(L2TP_PPP_HEADER);
+							}
+						}
 					}
 				}
 			}

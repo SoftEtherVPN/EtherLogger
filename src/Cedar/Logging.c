@@ -1547,6 +1547,7 @@ char *PacketLogParseProc(RECORD *rec)
 	t->NumTokens += 9;
 
 	t->NumTokens += 1;
+	t->NumTokens += 3;
 
 
 	t->Token = ZeroMalloc(sizeof(char *) * t->NumTokens);
@@ -2165,6 +2166,20 @@ char *PacketLogParseProc(RECORD *rec)
 			char tmp[64];
 			snprintf(tmp, sizeof(tmp), "PPPoE_SessionID=%u", p->StrippedPPPoESessionId);
 			t->Token[27] = CopyStr(tmp);
+		}
+
+		// L2TP
+		if (p->IsL2TP)
+		{
+			char tmp[64];
+			snprintf(tmp, sizeof(tmp), "L2TP_TunnelId=%u L2TP_SessionId=%u", p->StrippedL2TPTunnelId, p->StrippedPPPoESessionId);
+			t->Token[28] = CopyStr(tmp);
+
+			IPToStr(tmp, sizeof(tmp), &p->StrippedL2TPSrc);
+			t->Token[29] = CopyStr(tmp);
+
+			IPToStr(tmp, sizeof(tmp), &p->StrippedL2TPDst);
+			t->Token[30] = CopyStr(tmp);
 		}
 	}
 	else
