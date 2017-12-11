@@ -1719,6 +1719,8 @@ PKT *ClonePacket(PKT *p, bool copy_data)
 	ret->StrippedVxlanSrc = p->StrippedVxlanSrc;
 	ret->StrippedVxlanDst = p->StrippedVxlanDst;
 
+	ret->StrippedPPPoESessionId = p->StrippedPPPoESessionId;
+
 	Copy(ret->StrippedVxlanMacSrc, p->StrippedVxlanMacSrc, 6);
 	Copy(ret->StrippedVxlanMacDst, p->StrippedVxlanMacDst, 6);
 
@@ -1801,6 +1803,62 @@ PKT *ParsePacketEx5(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool b
 				size -= 4;
 
 				p->StrippedVlanId2 = vlan_ushort;
+			}
+		}
+
+		// PPPoE
+		if (size >= 14 + 10 + 20)
+		{
+			if (buf[12] == 0x88 && buf[13] == 0x64)
+			{
+				// PPPoE
+				PPPOE_HEADER *pppoe = (PPPOE_HEADER *)&buf[14];
+
+				if (pppoe->Code == 0x00)
+				{
+					USHORT protocol = Endian16(pppoe->PPP_ProtocolId);
+					USHORT session = Endian16(pppoe->SessionId);
+					UINT ip_ver = 0;
+
+					if (protocol == 0x0021)
+					{
+						// IPv4
+						IPV4_HEADER *tmp_hdr = (IPV4_HEADER *)(&buf[14 + sizeof(PPPOE_HEADER)]);
+						if (IPV4_GET_VERSION(tmp_hdr) == 4)
+						{
+							ip_ver = 4;
+						}
+					}
+					else if (protocol == 0x0057)
+					{
+						// IPv6
+						IPV4_HEADER *tmp_hdr = (IPV4_HEADER *)(&buf[14 + sizeof(PPPOE_HEADER)]);
+						if (IPV4_GET_VERSION(tmp_hdr) == 6)
+						{
+							ip_ver = 6;
+						}
+					}
+
+					if (ip_ver != 0)
+					{
+						switch (ip_ver)
+						{
+						case 4:
+							buf[12] = 0x08;
+							buf[13] = 0x00;
+							break;
+
+						case 6:
+							buf[12] = 0x86;
+							buf[13] = 0xDD;
+							break;
+						}
+
+						memmove(&buf[14], &buf[14 + 8], size - (14 + 8));
+						size -= 8;
+						p->StrippedPPPoESessionId = session;
+					}
+				}
 			}
 		}
 

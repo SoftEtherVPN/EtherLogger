@@ -1546,6 +1546,8 @@ char *PacketLogParseProc(RECORD *rec)
 
 	t->NumTokens += 9;
 
+	t->NumTokens += 1;
+
 
 	t->Token = ZeroMalloc(sizeof(char *) * t->NumTokens);
 
@@ -2136,6 +2138,7 @@ char *PacketLogParseProc(RECORD *rec)
 			t->Token[21] = CopyStr(tmp);
 		}
 
+		// VXLAN
 		if (p->StrippedVxlanId != 0)
 		{
 			char tmp[64];
@@ -2154,6 +2157,14 @@ char *PacketLogParseProc(RECORD *rec)
 
 			BinToStr(tmp, sizeof(tmp), p->StrippedVxlanMacDst, 6);
 			t->Token[26] = CopyStr(tmp);
+		}
+
+		// PPPoE
+		if (p->StrippedPPPoESessionId != 0)
+		{
+			char tmp[64];
+			snprintf(tmp, sizeof(tmp), "PPPoE_SessionID=%u", p->StrippedPPPoESessionId);
+			t->Token[27] = CopyStr(tmp);
 		}
 	}
 	else

@@ -584,6 +584,7 @@ typedef struct HTTPLOG HTTPLOG;
 typedef struct DHCP_MODIFY_OPTION DHCP_MODIFY_OPTION;
 typedef struct NBTDG_HEADER NBTDG_HEADER;
 typedef struct IKE_HEADER IKE_HEADER;
+typedef struct PPPOE_HEADER PPPOE_HEADER;
 
 
 

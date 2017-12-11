@@ -650,6 +650,16 @@ struct ICMPV6_HEADER_INFO
 #define	DHCP_ACK			5
 #define	DHCP_NACK			6
 
+// PPPoE Header
+struct PPPOE_HEADER
+{
+	UCHAR VersionAndType;
+	UCHAR Code;
+	USHORT SessionId;
+	USHORT PayloadLength;
+	USHORT PPP_ProtocolId;
+};
+
 // HTTPLOG data structure
 struct HTTPLOG
 {
@@ -690,6 +700,7 @@ struct PKT
 	UCHAR			Padding01[2];
 	UCHAR           StrippedVxlanMacDst[6];
 	UCHAR			Padding02[2];
+	UINT			StrippedPPPoESessionId;
 	UINT64			DelayedForwardTick;	// Sending time in case of delayed
 	struct SESSION	*DelayedSrcSession;	// Source session
 	UINT			TypeL3;			// Layer-3 packet classification
