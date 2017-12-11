@@ -1688,6 +1688,10 @@ PKT *ClonePacket(PKT *p, bool copy_data)
 		ret->L7.IkeHeader = MallocFast(sizeof(IKE_HEADER));
 		Copy(ret->L7.IkeHeader, p->L7.IkeHeader, sizeof(IKE_HEADER));
 		break;
+
+	case L7_DNS:
+		StrCpy(ret->DnsQueryHost, sizeof(ret->DnsQueryHost), p->DnsQueryHost);
+		break;
 	}
 
 	// Address data
@@ -1967,12 +1971,13 @@ PKT *ParsePacketEx5(UCHAR *buf, UINT size, bool no_l3, UINT vlan_type_id, bool b
 		USHORT port_raw = Endian16(80);
 		USHORT port_raw2 = Endian16(8080);
 		USHORT port_raw3 = Endian16(443);
+		USHORT port_raw4 = Endian16(3128);
 
 		// Analyze if the packet is a part of HTTP
 		if ((p->TypeL3 == L3_IPV4 || p->TypeL3 == L3_IPV6) && p->TypeL4 == L4_TCP)
 		{
 			TCP_HEADER *tcp = p->L4.TCPHeader;
-			if (tcp != NULL && (tcp->DstPort == port_raw || tcp->DstPort == port_raw2) &&
+			if (tcp != NULL && (tcp->DstPort == port_raw || tcp->DstPort == port_raw2 || tcp->DstPort == port_raw4) &&
 				(!((tcp->Flag & TCP_SYN) || (tcp->Flag & TCP_RST) || (tcp->Flag & TCP_FIN))))
 			{
 				if (p->PayloadSize >= 1)
@@ -3270,7 +3275,8 @@ void ParseDNS(PKT *p, UCHAR *buf, UINT size)
 		return;
 	}
 
-	Print("DNS: %s\n", hostname);
+	StrCpy(p->DnsQueryHost, sizeof(p->DnsQueryHost), hostname);
+	p->TypeL7 = L7_DNS;
 }
 
 // UDP parsing

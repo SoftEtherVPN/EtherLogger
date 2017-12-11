@@ -725,6 +725,7 @@ struct PKT
 	UCHAR				*Payload;		// Pointer to the payload of TCP or UDP
 	UINT				PayloadSize;	// Payload size
 	struct HTTPLOG		*HttpLog;		// HTTP log
+	char DnsQueryHost[64];				// DNS hostname
 } GCC_PACKED;
 
 // Layer-3 packet classification
