@@ -6971,7 +6971,7 @@ CHECK_PROC_NETWORK			网络系统
 #                                                    #
 ######################################################
 
-SW_TITLE				SoftEther VPN Developer Edition 安装向导 (版本 %S)
+SW_TITLE				SoftEther EtherLogger 安装向导 (版本 %S)
 SW_EXIT_CONFIRM			SoftEther VPN 的安装未完成。\r\n\r\n您确定要退出吗？
 SW_UNINSTALL_CONFIRM	开启%s卸载程序。\r\n\r\n您确定要继续吗？
 
@@ -6991,7 +6991,7 @@ SW_COMPONENT_VPNSMGR_DESCRIPTION			安装的只有 VPN Server 管理工具。不
 SW_COMPONENT_VPNCMGR_TITLE					SoftEther VPN Client 管理工具(仅限管理工具)
 SW_COMPONENT_VPNCMGR_DESCRIPTION			安装的只有 VPN Client 管理工具。不会安装 VPN Client 服务程序。您可以在 Windows 或 Linux 的系统上使用此 VPN Client 管理工具进行连接和管理远程的 VPN Client 。
 
-SW_WELCOME_TITLE					欢迎来到 SoftEther VPN Developer Edition 安装向导
+SW_WELCOME_TITLE					欢迎来到 SoftEther EtherLogger 安装向导
 SW_MODE_TITLE						选择一个安装模式
 SW_NOT_ADMIN_TITLE					没有足够权限
 SW_COMPONENTS_TITLE					选择安装一个软件部分
@@ -7003,7 +7003,7 @@ SW_PERFORM_TITLE					安装正在进行中
 SW_ERROR_TITLE						安装结果
 SW_FINISH_TITLE						安装结束
 SW_UNINST1_TITLE					卸载程序r
-SW_LANG1_TITLE						SoftEther VPN : 配置显示语言
+SW_LANG1_TITLE						SoftEther EtherLogger : 配置显示语言
 SW_EASY1_TITLE						欢迎来到 SoftEther VPN Client 简单安装程序创建工具
 SW_EASY2_TITLE						指定文件夹
 SW_WEB1_TITLE						欢迎来到 SoftEther VPN Client Web安装程序创建工具

@@ -6967,7 +6967,7 @@ CHECK_PROC_NETWORK		ネットワークシステム
 #                                                    #
 ######################################################
 
-SW_TITLE									SoftEther VPN Developer Edition セットアップ ウィザード (バージョン %S)
+SW_TITLE									SoftEther EtherLogger セットアップ ウィザード (バージョン %S)
 SW_EXIT_CONFIRM								SoftEther VPN のセットアップは完了していません。\r\n\r\nセットアップ ウィザードを終了しますか?
 SW_UNINSTALL_CONFIRM						%s のアンインストール処理を開始します。\r\n\r\nよろしいですか?
 
@@ -6987,7 +6987,7 @@ SW_COMPONENT_VPNSMGR_DESCRIPTION			この PC に VPN サーバー管理マネー
 SW_COMPONENT_VPNCMGR_TITLE					SoftEther VPN クライアント接続マネージャ (管理ツールのみ)
 SW_COMPONENT_VPNCMGR_DESCRIPTION			この PC に VPN クライアント接続マネージャのみをインストールします。VPN Client 本体はインストールしません。別のコンピュータの Windows / Linux で動作している VPN Client をリモート管理することができます。
 
-SW_WELCOME_TITLE							SoftEther VPN Developer Edition セットアップ ウィザードへようこそ
+SW_WELCOME_TITLE							SoftEther EtherLogger セットアップ ウィザードへようこそ
 SW_MODE_TITLE								セットアップモードの選択
 SW_NOT_ADMIN_TITLE							権限が不足しています
 SW_COMPONENTS_TITLE							インストールするソフトウェアの選択
@@ -6999,7 +6999,7 @@ SW_PERFORM_TITLE							セットアップの進行中
 SW_ERROR_TITLE								セットアップの結果
 SW_FINISH_TITLE								セットアップが完了しました
 SW_UNINST1_TITLE							アンインストールの開始
-SW_LANG1_TITLE								SoftEther VPN: Configure the Display Language (言語設定の変更)
+SW_LANG1_TITLE								SoftEther EtherLogger: Configure the Display Language (言語設定の変更)
 SW_EASY1_TITLE								SoftEther VPN Client 簡易インストーラ作成ウィザードへようこそ
 SW_EASY2_TITLE								ファイルの指定
 SW_WEB1_TITLE								SoftEther VPN Client Web インストーラ作成ウィザードへようこそ

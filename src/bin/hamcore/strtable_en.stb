@@ -6964,7 +6964,7 @@ CHECK_PROC_NETWORK		Network system
 #                                                    #
 ######################################################
 
-SW_TITLE									SoftEther VPN Developer Edition Setup Wizard (Version %S)
+SW_TITLE									SoftEther EtherLogger Setup Wizard (Version %S)
 SW_EXIT_CONFIRM								The setup process of SoftEther VPN hasn't been finished yet.\r\n\r\nDo you want to exit the setup?
 SW_UNINSTALL_CONFIRM						Starting the uninstall process of %s.\r\n\r\nDo you want to continue?
 
@@ -6984,7 +6984,7 @@ SW_COMPONENT_VPNSMGR_DESCRIPTION			Only the VPN Server Manager will be installed
 SW_COMPONENT_VPNCMGR_TITLE					SoftEther VPN Client Manager (Admin Tools Only)
 SW_COMPONENT_VPNCMGR_DESCRIPTION			Only the VPN Client Manager will be installed. The VPN Client service program will not be installed. You can use the VPN Client Manager to connect and manage remote VPN Clients on other computers which can be run on Windows and Linux.
 
-SW_WELCOME_TITLE							Welcome to the SoftEther VPN Developer Edition Setup Wizard
+SW_WELCOME_TITLE							Welcome to the SoftEther EtherLogger Setup Wizard
 SW_MODE_TITLE								Select a Setup Mode
 SW_NOT_ADMIN_TITLE							Not Enough Privileges
 SW_COMPONENTS_TITLE							Select Software Components to Install
@@ -6996,7 +6996,7 @@ SW_PERFORM_TITLE							Setup is in Progress
 SW_ERROR_TITLE								Results of Setup
 SW_FINISH_TITLE								Setup Finished
 SW_UNINST1_TITLE							Uninstaller
-SW_LANG1_TITLE								SoftEther VPN: Configure the Display Language
+SW_LANG1_TITLE								SoftEther EtherLogger: Configure the Display Language
 SW_EASY1_TITLE								Welcome to SoftEther VPN Client Easy Installer Creator
 SW_EASY2_TITLE								Specify Files
 SW_WEB1_TITLE								Welcome to SoftEther VPN Client Web Installer Creator
