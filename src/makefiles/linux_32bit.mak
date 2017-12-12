@@ -334,7 +334,6 @@ install: $(INSTALL_BINDIR)elogsvc
 	@echo "Installation completed successfully."
 	@echo
 	@echo "Execute 'elogsvc start' to run the SoftEther EtherLogger background service."
-"
 	@echo "--------------------------------------------------------------------"
 	@echo
 
