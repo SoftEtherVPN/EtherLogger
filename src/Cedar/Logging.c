@@ -2114,28 +2114,28 @@ char *PacketLogParseProc(RECORD *rec)
 		if (p->StrippedVlanId1 != 0)
 		{
 			char tmp[64];
-			snprintf(tmp, sizeof(tmp), "%u", p->StrippedVlanId1);
+			snprintf(tmp, sizeof(tmp), "VLAN1=%u", p->StrippedVlanId1);
 			t->Token[18] = CopyStr(tmp);
 		}
 		// VLAN
 		if (p->StrippedVlanId2 != 0)
 		{
 			char tmp[64];
-			snprintf(tmp, sizeof(tmp), "%u", p->StrippedVlanId2);
+			snprintf(tmp, sizeof(tmp), "VLAN2=%u", p->StrippedVlanId2);
 			t->Token[19] = CopyStr(tmp);
 		}
 		// VLAN
 		if (p->StrippedVlanId3 != 0)
 		{
 			char tmp[64];
-			snprintf(tmp, sizeof(tmp), "%u", p->StrippedVlanId3);
+			snprintf(tmp, sizeof(tmp), "VLAN3=%u", p->StrippedVlanId3);
 			t->Token[20] = CopyStr(tmp);
 		}
 		// VLAN
 		if (p->StrippedVlanId4 != 0)
 		{
 			char tmp[64];
-			snprintf(tmp, sizeof(tmp), "%u", p->StrippedVlanId4);
+			snprintf(tmp, sizeof(tmp), "VLAN4=%u", p->StrippedVlanId4);
 			t->Token[21] = CopyStr(tmp);
 		}
 
@@ -2144,13 +2144,13 @@ char *PacketLogParseProc(RECORD *rec)
 		{
 			char tmp[64];
 
-			IPToStr(tmp, sizeof(tmp), &p->StrippedVxlanSrc);
+			snprintf(tmp, sizeof(tmp), "VXLAN_ID=%u", p->StrippedVxlanId);
 			t->Token[22] = CopyStr(tmp);
 
-			IPToStr(tmp, sizeof(tmp), &p->StrippedVxlanDst);
+			IPToStr(tmp, sizeof(tmp), &p->StrippedVxlanSrc);
 			t->Token[23] = CopyStr(tmp);
 
-			snprintf(tmp, sizeof(tmp), "%u", p->StrippedVxlanId);
+			IPToStr(tmp, sizeof(tmp), &p->StrippedVxlanDst);
 			t->Token[24] = CopyStr(tmp);
 
 			BinToStr(tmp, sizeof(tmp), p->StrippedVxlanMacSrc, 6);
