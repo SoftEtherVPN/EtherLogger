@@ -3934,8 +3934,8 @@ S_11					高级重定向功能可以向重新定向的 CGI 提供 VPN 会话信�
 
 PREFIX					D_SW_WELCOME
 CAPTION					D_SW_WELCOME
-S_WELCOME				SoftEther VPN 在日本筑波大学开发的免费软件。具有终极兼容许多设备的高性能 VPN。支持 Windows、Mac、智能手机、平板电脑 (iPhone、iPad、安卓、Windows RT) 和思科或其他 VPN 路由器。SoftEther VPN 也接受 OpenVPN 和 MS-SSTP VPN 客户端。
-S_TITLE				非常强大的开源免费 VPN 软件。
+S_WELCOME				SoftEther EtherLogger 是一个捕捉从局域网卡连接到电脑上数据流的服务，保存由管理员指定类型的数据包的包头日志，所有数据以文本文件格式。
+S_TITLE				多平台的数据包记录系统。
 
 PREFIX					D_SW_MODE
 CAPTION					D_SW_MODE
@@ -6972,8 +6972,16 @@ CHECK_PROC_NETWORK			网络系统
 ######################################################
 
 SW_TITLE				SoftEther EtherLogger 安装向导 (版本 %S)
-SW_EXIT_CONFIRM			SoftEther VPN 的安装未完成。\r\n\r\n您确定要退出吗？
+SW_EXIT_CONFIRM			SoftEther EtherLogger 的安装未完成。\r\n\r\n您确定要退出吗？
 SW_UNINSTALL_CONFIRM	开启%s卸载程序。\r\n\r\n您确定要继续吗？
+
+
+
+SW_COMPONENT_ELOG_TITLE						SoftEther EtherLogger
+SW_COMPONENT_ELOG_DESCRIPTION				Install the EtherLogger service which provides the logging function of captured packets on this computer.
+
+SW_COMPONENT_ELOGMGR_TITLE					SoftEther EtherLogger (仅限管理工具)
+SW_COMPONENT_ELOGMGR_DESCRIPTION			Only the EtherLogger Manager will be installed. The EtherLogger service program will not be installed. You can use the EtherLogger Manager to connect and manage your remote EtherLogger service on a remote computer which can be run on Windows, Linux, Mac OS X, Solaris and FreeBSD.
 
 
 SW_COMPONENT_VPNSERVER_TITLE				SoftEther VPN Server
@@ -7109,6 +7117,8 @@ SW_DIRNAME_LANGUAGE_TOOLS				语言设置
 SW_RUN_TEXT_VPNSMGR					开启 SoftEther VPN Server 管理工具
 SW_RUN_TEXT_VPNCMGR					开启 SoftEther VPN Client 管理工具.
 
+SW_RUN_TEXT_ELOGMGR							开启 SoftEther EtherLogger 管理工具.
+
 SW_NIC_UNINSTALL						SoftEther VPN 客户端的虚拟网络适配器已在系统上创建。\r\n你要删除这些虚拟网络适配器?
 
 # --- Do not translate this section !!! stay them in English !!! ---
@@ -7121,10 +7131,21 @@ SW_LONG_VPNBRIDGE							SoftEther VPN Bridge Developer Edition
 SW_LONG_VPNSMGR								SoftEther VPN Server Manager Developer Edition
 SW_LONG_VPNCMGR								SoftEther VPN Client Manager Developer Edition
 SW_LANG_SET_FAILED							Failed to write the new language setting on lang.config file.
+
+SW_LONG_ELOG								SoftEther EtherLogger
+SW_LONG_ELOGMGR								SoftEther EtherLogger Manager GUI 
+
 # --- end of "Do not translate this section" ---
 
 
 # 快捷方式文件名
+SW_LINK_NAME_ELOGMGR_SHORT					EtherLogger 管理工具
+SW_LINK_NAME_ELOGMGR_SHORT_UM				EtherLogger 管理工具 (User-mode)
+SW_LINK_NAME_ELOGMGR_COMMENT				You can manage SoftEther EtherLogger service on a remote computer.
+SW_LINK_NAME_ELOGMGR_FULL					SoftEther EtherLogger 管理工具
+SW_LINK_NAME_ELOGMGR_SHORT_TOOLSONLY		EtherLogger 管理工具 (Tools)
+SW_LINK_NAME_ELOGMGR_SHORT_TOOLSONLY_UM		EtherLogger 管理工具 (User-mode)
+
 SW_LINK_NAME_VPNSMGR_SHORT				SoftEther VPN Server 管理工具 (Dev)
 SW_LINK_NAME_VPNSMGR_SHORT_UM				SE-VPN Server Manager (Dev User)
 SW_LINK_NAME_VPNSMGR_SHORT_TOOLSONLY		SE-VPN Server Manager (Dev Tools)
