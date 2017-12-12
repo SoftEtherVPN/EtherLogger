@@ -237,6 +237,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\elog_figure.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\EtherIP.bmp"
 				>
 			</File>

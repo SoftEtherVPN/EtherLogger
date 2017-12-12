@@ -3924,8 +3924,8 @@ S_11					高度なリダイレクション機能は、リダイレクト先 CGI 
 
 PREFIX					D_SW_WELCOME
 CAPTION					D_SW_WELCOME
-S_WELCOME				SoftEther VPN は筑波大学で開発された、Windows や Mac などのコンピュータおよび iPhone, iPad, Android, Windows RT などのスマートフォンやタブレット、Cisco などのサードパーティ製 VPN ルータ、OpenVPN や MS-SSTP などの既存の VPN プロトコルとも互換性がある安全で高性能なオープンソース VPN ソフトウェアです。
-S_TITLE				すべての主要なデバイスに対応するオープンソース VPN ソフトウェア
+S_WELCOME				SoftEther EtherLogger は、コンピュータに接続されている LAN カードを流れるデータをキャプチャし、管理者が指定した種類のパケットのヘッダまたはすべてのデータをテキストファイルにログとして記録するサービスです。
+S_TITLE					ネットワーク管理者向け マルチプラットフォーム パケットログ記録システム
 
 
 PREFIX					D_SW_MODE
@@ -6968,8 +6968,14 @@ CHECK_PROC_NETWORK		ネットワークシステム
 ######################################################
 
 SW_TITLE									SoftEther EtherLogger セットアップ ウィザード (バージョン %S)
-SW_EXIT_CONFIRM								SoftEther VPN のセットアップは完了していません。\r\n\r\nセットアップ ウィザードを終了しますか?
+SW_EXIT_CONFIRM								SoftEther EtherLogger のセットアップは完了していません。\r\n\r\nセットアップ ウィザードを終了しますか?
 SW_UNINSTALL_CONFIRM						%s のアンインストール処理を開始します。\r\n\r\nよろしいですか?
+
+SW_COMPONENT_ELOG_TITLE						SoftEther EtherLogger
+SW_COMPONENT_ELOG_DESCRIPTION				EtherLogger のログ保存サービスおよび管理ツールをインストールします。
+
+SW_COMPONENT_ELOGMGR_TITLE					SoftEther EtherLogger (管理ツールのみ)
+SW_COMPONENT_ELOGMGR_DESCRIPTION			他の Windows または UNIX コンピュータ上で動作している EtherLogger のサービスをリモート管理するための管理ツールのみインストールします。
 
 
 SW_COMPONENT_VPNSERVER_TITLE				SoftEther VPN Server
@@ -7104,6 +7110,8 @@ SW_DIRNAME_LANGUAGE_TOOLS					Language Settings
 SW_RUN_TEXT_VPNSMGR							SoftEther VPN サーバー管理マネージャを起動します。
 SW_RUN_TEXT_VPNCMGR							SoftEther VPN クライアント接続マネージャを起動します。
 
+SW_RUN_TEXT_ELOGMGR							SoftEther EtherLogger 管理マネージャを起動します。
+
 SW_NIC_UNINSTALL							SoftEther VPN Client の仮想 LAN カードが作成されています。\r\nこれらの仮想 LAN カードを削除しますか?
 
 # Do not translate this section !!!
@@ -7116,9 +7124,21 @@ SW_LONG_VPNBRIDGE							SoftEther VPN Bridge Developer Edition
 SW_LONG_VPNSMGR								SoftEther VPN Server Manager Developer Edition
 SW_LONG_VPNCMGR								SoftEther VPN Client Manager Developer Edition
 SW_LANG_SET_FAILED							Failed to write the new language setting on lang.config file.
+
+SW_LONG_ELOG								SoftEther EtherLogger
+SW_LONG_ELOGMGR								SoftEther EtherLogger Manager GUI 
+
 # --- end of "Do not translate this section" ---
 
 # ショートカット名
+SW_LINK_NAME_ELOGMGR_SHORT					EtherLogger 管理マネージャ
+SW_LINK_NAME_ELOGMGR_SHORT_UM				EtherLogger 管理マネージャ (ユーザモード)
+SW_LINK_NAME_ELOGMGR_COMMENT				ローカルまたはリモート コンピュータ上で動作している SoftEther EtherLogger を管理するための管理ツールです。
+SW_LINK_NAME_ELOGMGR_FULL					SoftEther EtherLogger 管理マネージャ
+SW_LINK_NAME_ELOGMGR_SHORT_TOOLSONLY		EtherLogger 管理マネージャ (ツール)
+SW_LINK_NAME_ELOGMGR_SHORT_TOOLSONLY_UM		EtherLogger 管理マネージャ (ツール・ユーザーモード)
+
+
 SW_LINK_NAME_VPNSMGR_SHORT					SoftEther VPN サーバー管理 (Dev)
 SW_LINK_NAME_VPNSMGR_SHORT_UM				SE-VPN サーバー管理 (Dev・ユーザー)
 SW_LINK_NAME_VPNSMGR_SHORT_TOOLSONLY		SE-VPN サーバー管理 (Dev・ツール)

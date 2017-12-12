@@ -130,6 +130,13 @@
 #define	SW_NAME_VPNCMGR				"vpncmgr"
 #define	SW_LONG_VPNCMGR				_UU("SW_LONG_VPNCMGR")
 
+#define	SW_NAME_ELOG				"elog"
+#define	SW_LONG_ELOG				_UU("SW_LONG_ELOG")
+
+#define	SW_NAME_ELOGMGR				"elogmgr"
+#define	SW_LONG_ELOGMGR				_UU("SW_LONG_ELOGMGR")
+
+
 #define	SW_VPN_CLIENT_UIHELPER_REGVALUE	GC_SW_UIHELPER_REGVALUE
 
 #define	SW_VPN_CLIENT_EXT_REGKEY	"SOFTWARE\\Classes\\.vpn"
@@ -153,6 +160,10 @@
 #define	SW_CMP_VPN_BRIDGE			3	// VPN Bridge
 #define	SW_CMP_VPN_SMGR				4	// VPN Server Manager (Tools Only)
 #define	SW_CMP_VPN_CMGR				5	// VPN Client Manager (Tools Only)
+
+#define SW_CMP_ELOG					6	// EtherLogger
+#define SW_CMP_ELOGMGR				7	// EtherLogger Manager (Tools Only)
+
 
 // Exit code
 #define	SW_EXIT_CODE_USER_CANCEL			1000000001		// Cancel by the user

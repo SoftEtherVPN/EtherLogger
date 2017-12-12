@@ -163,32 +163,12 @@ static SW_OLD_MSI old_msi_vpnbridge[] =
 };
 
 // List of file names needed to SFX
-static char *sfx_vpn_server_bridge_files[] =
+static char *sfx_elog_files[] =
 {
-	"vpnsetup.exe",
-	"vpnsetup_x64.exe",
-	"vpnserver.exe",
-	"vpnserver_x64.exe",
-	"vpnbridge.exe",
-	"vpnbridge_x64.exe",
-	"vpnsmgr.exe",
-	"vpnsmgr_x64.exe",
-	"vpncmd.exe",
-	"vpncmd_x64.exe",
-	"hamcore.se2",
-};
-static char *sfx_vpn_client_files[] =
-{
-	"vpnsetup.exe",
-	"vpnsetup_x64.exe",
-	"vpnclient.exe",
-	"vpnclient_x64.exe",
-	"vpncmgr.exe",
-	"vpncmgr_x64.exe",
-	"vpncmd.exe",
-	"vpncmd_x64.exe",
-	"vpninstall.exe",
-	"vpnweb.cab",
+	"elogmgr.exe",
+	"elogmgr_x64.exe",
+	"elogsvc.exe",
+	"elogsvc_x64.exe",
 	"hamcore.se2",
 };
 
@@ -360,27 +340,11 @@ bool SwAddBasicFilesToList(LIST *o, char *component_name)
 		return false;
 	}
 
-	if (StrCmpi(component_name, "vpnserver_vpnbridge") == 0)
+	if (StrCmpi(component_name, "elog") == 0)
 	{
-		// VPN Server & VPN Bridge
-		for (i = 0; i < (sizeof(sfx_vpn_server_bridge_files) / sizeof(char *)); i++)
+		for (i = 0; i < (sizeof(sfx_elog_files) / sizeof(char *)); i++)
 		{
-			char *name = sfx_vpn_server_bridge_files[i];
-			wchar_t name_w[MAX_PATH];
-			wchar_t src_file_name[MAX_PATH];
-
-			StrToUni(name_w, sizeof(name_w), name);
-			ConbinePathW(src_file_name, sizeof(src_file_name), MsGetExeFileDirW(), name_w);
-
-			Add(o, SwNewSfxFile(name, src_file_name));
-		}
-	}
-	else if (StrCmpi(component_name, "vpnclient") == 0)
-	{
-		// VPN Client
-		for (i = 0; i < (sizeof(sfx_vpn_client_files) / sizeof(char *)); i++)
-		{
-			char *name = sfx_vpn_client_files[i];
+			char *name = sfx_elog_files[i];
 			wchar_t name_w[MAX_PATH];
 			wchar_t src_file_name[MAX_PATH];
 
@@ -2506,33 +2470,30 @@ void SwDefineTasks(SW *sw, SW_TASK *t, SW_COMPONENT *c)
 		L"vpnsetup_x64.exe", src_setup_exe_dir, sw->InstallDir, true, true)));
 
 	// Generate the file processing list for each component
-	if (c->Id == SW_CMP_VPN_SERVER)
+	if (c->Id == SW_CMP_ELOG)
 	{
-		// VPN Server
+		// EtherLogger
 		SW_TASK_COPY *ct;
-		SW_TASK_COPY *vpnserver, *vpncmd, *vpnsmgr;
+		SW_TASK_COPY *elogsvc, *elogmgr;
 
-		CombinePathW(tmp, sizeof(tmp), sw->InstallDir, L"backup.vpn_server.config");
+		CombinePathW(tmp, sizeof(tmp), sw->InstallDir, L"backup.etherlogger.config");
 		Add(t->SetSecurityPaths, CopyUniStr(tmp));
 
 		if (x64 == false)
 		{
-			vpnserver = SwNewCopyTask(L"vpnserver.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpncmd = SwNewCopyTask(L"vpncmd.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpnsmgr = SwNewCopyTask(L"vpnsmgr.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
+			elogsvc = SwNewCopyTask(L"elogsvc.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
+			elogmgr = SwNewCopyTask(L"elogmgr.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
 		}
 		else
 		{
-			vpnserver = SwNewCopyTask(L"vpnserver_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpncmd = SwNewCopyTask(L"vpncmd_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpnsmgr = SwNewCopyTask(L"vpnsmgr_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
+			elogsvc = SwNewCopyTask(L"elogsvc_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
+			elogmgr = SwNewCopyTask(L"elogmgr_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
 		}
 
-		Add(t->CopyTasks, vpnserver);
-		Add(t->CopyTasks, vpncmd);
-		Add(t->CopyTasks, vpnsmgr);
+		Add(t->CopyTasks, elogsvc);
+		Add(t->CopyTasks, elogmgr);
 
-		Add(t->CopyTasks, (ct = SwNewCopyTask(L"|empty.config", L"vpn_server.config", sw->InstallSrc, sw->InstallDir, false, false)));
+		Add(t->CopyTasks, (ct = SwNewCopyTask(L"|empty.config", L"etherlogger.config", sw->InstallSrc, sw->InstallDir, false, false)));
 		Add(t->CopyTasks, SwNewCopyTask(L"|backup_dir_readme.txt", L"readme.txt", sw->InstallSrc, tmp, false, false));
 
 		CombinePathW(tmp, sizeof(tmp), ct->DstDir, ct->DstFileName);
@@ -2540,344 +2501,54 @@ void SwDefineTasks(SW *sw, SW_TASK *t, SW_COMPONENT *c)
 
 		//// Definition of the shortcuts
 		// Desktop and Start menu
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnsmgr->DstFileName, NULL, NULL, 0, dir_desktop,
-			_UU(sw->IsSystemMode ? "SW_LINK_NAME_VPNSMGR_SHORT" : "SW_LINK_NAME_VPNSMGR_SHORT_UM"),
-			_UU("SW_LINK_NAME_VPNSMGR_COMMENT"), true));
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnsmgr->DstFileName, NULL, NULL, 0, dir_startmenu,
-			_UU(sw->IsSystemMode ? "SW_LINK_NAME_VPNSMGR_SHORT" : "SW_LINK_NAME_VPNSMGR_SHORT_UM"),
-			_UU("SW_LINK_NAME_VPNSMGR_COMMENT"), true));
+		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, elogmgr->DstFileName, NULL, NULL, 0, dir_desktop,
+			_UU(sw->IsSystemMode ? "SW_LINK_NAME_ELOGMGR_SHORT" : "SW_LINK_NAME_ELOGMGR_SHORT_UM"),
+			_UU("SW_LINK_NAME_ELOGMGR_COMMENT"), true));
+		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, elogmgr->DstFileName, NULL, NULL, 0, dir_startmenu,
+			_UU(sw->IsSystemMode ? "SW_LINK_NAME_ELOGMGR_SHORT" : "SW_LINK_NAME_ELOGMGR_SHORT_UM"),
+			_UU("SW_LINK_NAME_ELOGMGR_COMMENT"), true));
 
 		// Programs\PacketiX VPN Server
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnsmgr->DstFileName, NULL, NULL, 0, dir_app_program,
-			_UU("SW_LINK_NAME_VPNSMGR_FULL"),
-			_UU("SW_LINK_NAME_VPNSMGR_COMMENT"), false));
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmd->DstFileName, NULL, NULL, 0, dir_app_program,
-			_UU("SW_LINK_NAME_VPNCMD"),
-			_UU("SW_LINK_NAME_VPNCMD_COMMENT"), false));
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnserver->DstFileName, L"/traffic", L"vpnsetup.exe", 2, dir_admin_tools,
-			_UU("SW_LINK_NAME_TRAFFIC"),
-			_UU("SW_LINK_NAME_TRAFFIC_COMMENT"), false));
-
-		// Programs\PacketiX VPN Server\Configuration tool
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnserver->DstFileName, L"/tcp", L"vpnsetup.exe", 3, dir_config_program,
-			_UU("SW_LINK_NAME_TCP"),
-			_UU("SW_LINK_NAME_TCP_COMMENT"), false));
+		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, elogmgr->DstFileName, NULL, NULL, 0, dir_app_program,
+			_UU("SW_LINK_NAME_ELOGMGR_FULL"),
+			_UU("SW_LINK_NAME_ELOGMGR_COMMENT"), false));
 
 		if (MsIsWin2000OrGreater())
 		{
 			Add(t->LinkTasks, SwNewLinkTask(MsGetSystem32DirW(), L"services.msc", NULL, L"filemgmt.dll", 0, dir_config_program,
 				_UU("SW_LINK_NAME_SERVICES"),
 				_UU("SW_LINK_NAME_SERVICES_COMMENT"), false));
-
-			if (sw->IsSystemMode)
-			{
-				// Debugging information collecting tool
-				Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmd->DstFileName, L"/debug", L"vpnsetup.exe", 4, dir_admin_tools,
-					_UU("SW_LINK_NAME_DEBUG"),
-					_UU("SW_LINK_NAME_DEBUG_COMMENT"), false));
-			}
-		}
-
-		if (sw->IsSystemMode == false)
-		{
-			// Register to the start-up in the case of user mode
-			Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnserver->DstFileName, L"/usermode", NULL, 0, dir_startup,
-				_UU("SW_LINK_NAME_VPNSERVER_SVC"),
-				_UU("SW_LINK_NAME_VPNSERVER_SVC_COMMENT"), true));
 		}
 	}
-	else if (c->Id == SW_CMP_VPN_BRIDGE)
-	{
-		// VPN Bridge
-		SW_TASK_COPY *ct;
-		SW_TASK_COPY *vpnbridge, *vpncmd, *vpnsmgr;
-
-		CombinePathW(tmp, sizeof(tmp), sw->InstallDir, L"backup.vpn_bridge.config");
-		Add(t->SetSecurityPaths, CopyUniStr(tmp));
-
-		if (x64 == false)
-		{
-			vpnbridge = SwNewCopyTask(L"vpnbridge.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpncmd = SwNewCopyTask(L"vpncmd.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpnsmgr = SwNewCopyTask(L"vpnsmgr.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-		}
-		else
-		{
-			vpnbridge = SwNewCopyTask(L"vpnbridge_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpncmd = SwNewCopyTask(L"vpncmd_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpnsmgr = SwNewCopyTask(L"vpnsmgr_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-		}
-
-		Add(t->CopyTasks, vpnbridge);
-		Add(t->CopyTasks, vpncmd);
-		Add(t->CopyTasks, vpnsmgr);
-
-		Add(t->CopyTasks, (ct = SwNewCopyTask(L"|empty.config", L"vpn_bridge.config", sw->InstallSrc, sw->InstallDir, false, false)));
-		Add(t->CopyTasks, SwNewCopyTask(L"|backup_dir_readme.txt", L"readme.txt", sw->InstallSrc, tmp, false, false));
-
-		CombinePathW(tmp, sizeof(tmp), ct->DstDir, ct->DstFileName);
-		Add(t->SetSecurityPaths, CopyUniStr(tmp));
-
-		//// Definition of the shortcuts
-		// Desktop and Start menu
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnsmgr->DstFileName, NULL, NULL, 0, dir_desktop,
-			_UU(sw->IsSystemMode ? "SW_LINK_NAME_VPNSMGR_SHORT" : "SW_LINK_NAME_VPNSMGR_SHORT_UM"),
-			_UU("SW_LINK_NAME_VPNSMGR_COMMENT"), true));
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnsmgr->DstFileName, NULL, NULL, 0, dir_startmenu,
-			_UU(sw->IsSystemMode ? "SW_LINK_NAME_VPNSMGR_SHORT" : "SW_LINK_NAME_VPNSMGR_SHORT_UM"),
-			_UU("SW_LINK_NAME_VPNSMGR_COMMENT"), true));
-
-		// Programs\PacketiX VPN Bridge
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnsmgr->DstFileName, NULL, NULL, 0, dir_app_program,
-			_UU("SW_LINK_NAME_VPNSMGR_FULL"),
-			_UU("SW_LINK_NAME_VPNSMGR_COMMENT"), false));
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmd->DstFileName, NULL, NULL, 0, dir_app_program,
-			_UU("SW_LINK_NAME_VPNCMD"),
-			_UU("SW_LINK_NAME_VPNCMD_COMMENT"), false));
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnbridge->DstFileName, L"/traffic", L"vpnsetup.exe", 2, dir_admin_tools,
-			_UU("SW_LINK_NAME_TRAFFIC"),
-			_UU("SW_LINK_NAME_TRAFFIC_COMMENT"), false));
-
-		// Programs\PacketiX VPN Bridge\Configuration tool
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnbridge->DstFileName, L"/tcp", L"vpnsetup.exe", 3, dir_config_program,
-			_UU("SW_LINK_NAME_TCP"),
-			_UU("SW_LINK_NAME_TCP_COMMENT"), false));
-
-		if (MsIsWin2000OrGreater())
-		{
-			Add(t->LinkTasks, SwNewLinkTask(MsGetSystem32DirW(), L"services.msc", NULL, L"filemgmt.dll", 0, dir_config_program,
-				_UU("SW_LINK_NAME_SERVICES"),
-				_UU("SW_LINK_NAME_SERVICES_COMMENT"), false));
-
-			if (sw->IsSystemMode)
-			{
-				// Debugging information collecting tool
-				Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmd->DstFileName, L"/debug", L"vpnsetup.exe", 4, dir_admin_tools,
-					_UU("SW_LINK_NAME_DEBUG"),
-					_UU("SW_LINK_NAME_DEBUG_COMMENT"), false));
-			}
-		}
-
-		if (sw->IsSystemMode == false)
-		{
-			// Register to the start-up in the case of user mode
-			Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnbridge->DstFileName, L"/usermode", NULL, 0, dir_startup,
-				_UU("SW_LINK_NAME_VPNBRIDGE_SVC"),
-				_UU("SW_LINK_NAME_VPNBRIDGE_SVC_COMMENT"), true));
-		}
-	}
-	else if (c->Id == SW_CMP_VPN_CLIENT)
-	{
-		// VPN Client
-		SW_TASK_COPY *ct;
-		SW_TASK_COPY *vpnclient, *vpncmd, *vpncmgr;
-		SW_TASK_COPY *vpnclient_gomi, *vpncmd_gomi, *vpncmgr_gomi;
-		SW_TASK_COPY *sfx_cache = NULL;
-		SW_TASK_COPY *vpnweb;
-		SW_TASK_COPY *vpninstall;
-		wchar_t *src_config_filename;
-
-		CombinePathW(tmp, sizeof(tmp), sw->InstallDir, L"backup.vpn_client.config");
-		Add(t->SetSecurityPaths, CopyUniStr(tmp));
-
-		if (x64 == false)
-		{
-			vpnclient = SwNewCopyTask(L"vpnclient.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpncmd = SwNewCopyTask(L"vpncmd.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpncmgr = SwNewCopyTask(L"vpncmgr.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpnclient_gomi = SwNewCopyTask(L"vpnclient_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpncmd_gomi = SwNewCopyTask(L"vpncmd_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpncmgr_gomi = SwNewCopyTask(L"vpncmgr_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-		}
-		else
-		{
-			vpnclient = SwNewCopyTask(L"vpnclient_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpncmd = SwNewCopyTask(L"vpncmd_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpncmgr = SwNewCopyTask(L"vpncmgr_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpnclient_gomi = SwNewCopyTask(L"vpnclient.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpncmd_gomi = SwNewCopyTask(L"vpncmd.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpncmgr_gomi = SwNewCopyTask(L"vpncmgr.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-		}
-
-		if (vpncmgr != NULL)
-		{
-			CombinePathW(sw->vpncmgr_path, sizeof(sw->vpncmgr_path),
-				vpncmgr->DstDir, vpncmgr->DstFileName);
-		}
-
-		if (UniIsEmptyStr(sw->CallerSfxPath) == false)
-		{
-			if (IsFileExistsW(sw->CallerSfxPath))
-			{
-				// Cache the calling SFX file body to the installation directory
-				wchar_t srcname[MAX_PATH];
-				wchar_t srcdir[MAX_PATH];
-
-				GetFileNameFromFilePathW(srcname, sizeof(srcname), sw->CallerSfxPath);
-				GetDirNameFromFilePathW(srcdir, sizeof(srcdir), sw->CallerSfxPath);
-
-				sfx_cache = SwNewCopyTask(srcname, SW_SFX_CACHE_FILENAME, srcdir, sw->InstallDir, true, false);
-			}
-		}
-
-		vpnweb = SwNewCopyTask(L"vpnweb.cab", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-		vpninstall = SwNewCopyTask(L"vpninstall.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-
-		Add(t->CopyTasks, vpnclient);
-		Add(t->CopyTasks, vpncmd);
-		Add(t->CopyTasks, vpncmgr);
-		Add(t->CopyTasks, vpnclient_gomi);
-		Add(t->CopyTasks, vpncmd_gomi);
-		Add(t->CopyTasks, vpncmgr_gomi);
-		Add(t->CopyTasks, vpnweb);
-		Add(t->CopyTasks, vpninstall);
-
-
-		if (sfx_cache != NULL)
-		{
-			Add(t->CopyTasks, sfx_cache);
-		}
-
-		src_config_filename = L"|empty.config";
-
-		Add(t->CopyTasks, (ct = SwNewCopyTask(src_config_filename, L"vpn_client.config", sw->InstallSrc, sw->InstallDir, false, false)));
-
-		Add(t->CopyTasks, SwNewCopyTask(L"|backup_dir_readme.txt", L"readme.txt", sw->InstallSrc, tmp, false, false));
-
-		CombinePathW(tmp, sizeof(tmp), ct->DstDir, ct->DstFileName);
-		Add(t->SetSecurityPaths, CopyUniStr(tmp));
-
-		//// Definition of the shortcuts
-		// Desktop and Start menu
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmgr->DstFileName, NULL, NULL, 0, dir_desktop,
-			_UU("SW_LINK_NAME_VPNCMGR_SHORT"),
-			_UU("SW_LINK_NAME_VPNCMGR_COMMENT"), true));
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmgr->DstFileName, NULL, NULL, 0, dir_startmenu,
-			_UU("SW_LINK_NAME_VPNCMGR_SHORT"),
-			_UU("SW_LINK_NAME_VPNCMGR_COMMENT"), true));
-
-		// Programs\PacketiX VPN Client
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmgr->DstFileName, NULL, NULL, 0, dir_app_program,
-			_UU("SW_LINK_NAME_VPNCMGR_FULL"),
-			_UU("SW_LINK_NAME_VPNCMGR_COMMENT"), false));
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmgr->DstFileName, L"/remote", L"vpnsetup.exe", 1, dir_app_program,
-			_UU("SW_LINK_NAME_VPNCMGR2_FULL"),
-			_UU("SW_LINK_NAME_VPNCMGR2_COMMENT"), false));
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmd->DstFileName, NULL, NULL, 0, dir_app_program,
-			_UU("SW_LINK_NAME_VPNCMD"),
-			_UU("SW_LINK_NAME_VPNCMD_COMMENT"), false));
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnclient->DstFileName, L"/traffic", L"vpnsetup.exe", 2, dir_admin_tools,
-			_UU("SW_LINK_NAME_TRAFFIC"),
-			_UU("SW_LINK_NAME_TRAFFIC_COMMENT"), false));
-
-		// Programs\PacketiX VPN Client\Configuration Tools
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnclient->DstFileName, L"/tcp", L"vpnsetup.exe", 3, dir_config_program,
-			_UU("SW_LINK_NAME_TCP"),
-			_UU("SW_LINK_NAME_TCP_COMMENT"), false));
-
-		if (MsIsWin2000OrGreater())
-		{
-			Add(t->LinkTasks, SwNewLinkTask(MsGetSystem32DirW(), L"services.msc", NULL, L"filemgmt.dll", 0, dir_config_program,
-				_UU("SW_LINK_NAME_SERVICES"),
-				_UU("SW_LINK_NAME_SERVICES_COMMENT"), false));
-
-			if (sw->IsSystemMode)
-			{
-				// Debugging information collecting tool
-				Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmd->DstFileName, L"/debug", L"vpnsetup.exe", 4, dir_admin_tools,
-					_UU("SW_LINK_NAME_DEBUG"),
-					_UU("SW_LINK_NAME_DEBUG_COMMENT"), false));
-			}
-		}
-
-		// Programs\PacketiX VPN Client\System administrators tool
-		if (MsIsNt())
-		{
-			Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, L"vpnsetup.exe", L"/easy:true", L"vpnsetup.exe", 12, dir_admin_tools,
-				_UU("SW_LINK_NAME_EASYINSTALLER"),
-				_UU("SW_LINK_NAME_EASYINSTALLER_COMMENT"), false));
-
-			Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, L"vpnsetup.exe", L"/web:true", L"vpnsetup.exe", 1, dir_admin_tools,
-				_UU("SW_LINK_NAME_WEBINSTALLER"),
-				_UU("SW_LINK_NAME_WEBINSTALLER_COMMENT"), false));
-		}
-
-		// Startup
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmgr->DstFileName, L"/startup", NULL, 0, dir_startup,
-			_UU("SW_LINK_NAME_VPNCMGRTRAY_FULL"),
-			_UU("SW_LINK_NAME_VPNCMGRTRAY_COMMENT"), true));
-	}
-	else if (c->Id == SW_CMP_VPN_SMGR)
+	else if (c->Id == SW_CMP_ELOGMGR)
 	{
 		// VPN Server Manager (Tools Only)
-		SW_TASK_COPY *vpncmd, *vpnsmgr;
+		SW_TASK_COPY *elogmgr;
 
 		if (x64 == false)
 		{
-			vpncmd = SwNewCopyTask(L"vpncmd.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpnsmgr = SwNewCopyTask(L"vpnsmgr.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
+			elogmgr = SwNewCopyTask(L"elogmgr.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
 		}
 		else
 		{
-			vpncmd = SwNewCopyTask(L"vpncmd_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpnsmgr = SwNewCopyTask(L"vpnsmgr_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
+			elogmgr = SwNewCopyTask(L"elogmgr_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
 		}
 
-		Add(t->CopyTasks, vpncmd);
-		Add(t->CopyTasks, vpnsmgr);
+		Add(t->CopyTasks, elogmgr);
 
 		//// Definition of the shortcuts
 		// Desktop and Start menu
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnsmgr->DstFileName, NULL, NULL, 0, dir_desktop,
-			_UU(sw->IsSystemMode ? "SW_LINK_NAME_VPNSMGR_SHORT_TOOLSONLY" : "SW_LINK_NAME_VPNSMGR_SHORT_TOOLSONLY_UM"),
-			_UU("SW_LINK_NAME_VPNSMGR_COMMENT"), true));
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnsmgr->DstFileName, NULL, NULL, 0, dir_startmenu,
-			_UU(sw->IsSystemMode ? "SW_LINK_NAME_VPNSMGR_SHORT_TOOLSONLY" : "SW_LINK_NAME_VPNSMGR_SHORT_TOOLSONLY_UM"),
-			_UU("SW_LINK_NAME_VPNSMGR_COMMENT"), true));
+		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, elogmgr->DstFileName, NULL, NULL, 0, dir_desktop,
+			_UU(sw->IsSystemMode ? "SW_LINK_NAME_ELOGMGR_SHORT_TOOLSONLY" : "SW_LINK_NAME_ELOGMGR_SHORT_TOOLSONLY_UM"),
+			_UU("SW_LINK_NAME_ELOGMGR_COMMENT"), true));
+		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, elogmgr->DstFileName, NULL, NULL, 0, dir_startmenu,
+			_UU(sw->IsSystemMode ? "SW_LINK_NAME_ELOGMGR_SHORT_TOOLSONLY" : "SW_LINK_NAME_ELOGMGR_SHORT_TOOLSONLY_UM"),
+			_UU("SW_LINK_NAME_ELOGMGR_COMMENT"), true));
 
 		// Programs\PacketiX VPN Server Manager (Tools Only)
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpnsmgr->DstFileName, NULL, NULL, 0, dir_app_program,
-			_UU("SW_LINK_NAME_VPNSMGR_FULL"),
+		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, elogmgr->DstFileName, NULL, NULL, 0, dir_app_program,
+			_UU("SW_LINK_NAME_ELOGMGR_FULL"),
 			_UU("SW_LINK_NAME_VPNSMGR_COMMENT"), false));
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmd->DstFileName, NULL, NULL, 0, dir_app_program,
-			_UU("SW_LINK_NAME_VPNCMD"),
-			_UU("SW_LINK_NAME_VPNCMD_COMMENT"), false));
-	}
-	else if (c->Id == SW_CMP_VPN_CMGR)
-	{
-		// VPN Client Manager (Tools Only)
-		SW_TASK_COPY *vpncmd, *vpncmgr;
-
-		if (x64 == false)
-		{
-			vpncmd = SwNewCopyTask(L"vpncmd.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpncmgr = SwNewCopyTask(L"vpncmgr.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-		}
-		else
-		{
-			vpncmd = SwNewCopyTask(L"vpncmd_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-			vpncmgr = SwNewCopyTask(L"vpncmgr_x64.exe", NULL, sw->InstallSrc, sw->InstallDir, true, false);
-		}
-
-		Add(t->CopyTasks, vpncmd);
-		Add(t->CopyTasks, vpncmgr);
-
-		//// Definition of the shortcuts
-		// Desktop and Start menu
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmgr->DstFileName, L"/remote", L"vpnsetup.exe", 1, dir_desktop,
-			_UU(sw->IsSystemMode ? "SW_LINK_NAME_VPNCMGRTOOLS_SHORT" : "SW_LINK_NAME_VPNCMGRTOOLS_SHORT_UM"),
-			_UU("SW_LINK_NAME_VPNCMGR2_COMMENT"), true));
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmgr->DstFileName, L"/remote", L"vpnsetup.exe", 1, dir_startmenu,
-			_UU(sw->IsSystemMode ? "SW_LINK_NAME_VPNCMGRTOOLS_SHORT" : "SW_LINK_NAME_VPNCMGRTOOLS_SHORT_UM"),
-			_UU("SW_LINK_NAME_VPNCMGR2_COMMENT"), true));
-
-		// Programs\PacketiX VPN Client Manager (Tools Only)
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmgr->DstFileName, L"/remote", L"vpnsetup.exe", 1, dir_app_program,
-			_UU("SW_LINK_NAME_VPNCMGR2_FULL"),
-			_UU("SW_LINK_NAME_VPNCMGR2_COMMENT"), false));
-		Add(t->LinkTasks, SwNewLinkTask(sw->InstallDir, vpncmd->DstFileName, NULL, NULL, 0, dir_app_program,
-			_UU("SW_LINK_NAME_VPNCMD"),
-			_UU("SW_LINK_NAME_VPNCMD_COMMENT"), false));
 	}
 
 	// Uninstallation
@@ -5304,7 +4975,7 @@ UINT SwEula(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam, WIZARD *wizard, W
 
 		if (sw->EulaAgreed)
 		{
-			return D_SW_WARNING;
+			return D_SW_DIR;
 		}
 		break;
 
@@ -6201,52 +5872,18 @@ bool SwCheckOs(SW *sw, SW_COMPONENT *c)
 void SwDefineComponents(SW *sw)
 {
 	SW_COMPONENT *c;
-	char *vpn_server_files[] =
+	char *elog_files[] =
 	{
-		"vpnserver.exe",
-		"vpnserver_x64.exe",
-		"vpnsmgr.exe",
-		"vpnsmgr_x64.exe",
-		"vpncmd.exe",
-		"vpncmd_x64.exe",
+		"elogsvc.exe",
+		"elogsvc_x64.exe",
+		"elogmgr.exe",
+		"elogmgr_x64.exe",
 		"hamcore.se2",
 	};
-	char *vpn_client_files[] =
+	char *elogmgr_files[] =
 	{
-		"vpnclient.exe",
-		"vpnclient_x64.exe",
-		"vpncmgr.exe",
-		"vpncmgr_x64.exe",
-		"vpncmd.exe",
-		"vpncmd_x64.exe",
-		"hamcore.se2",
-		"vpninstall.exe",
-		"vpnweb.cab",
-	};
-	char *vpn_bridge_files[] =
-	{
-		"vpnbridge.exe",
-		"vpnbridge_x64.exe",
-		"vpnsmgr.exe",
-		"vpnsmgr_x64.exe",
-		"vpncmd.exe",
-		"vpncmd_x64.exe",
-		"hamcore.se2",
-	};
-	char *vpn_smgr_files[] =
-	{
-		"vpnsmgr.exe",
-		"vpnsmgr_x64.exe",
-		"vpncmd.exe",
-		"vpncmd_x64.exe",
-		"hamcore.se2",
-	};
-	char *vpn_cmgr_files[] =
-	{
-		"vpncmgr.exe",
-		"vpncmgr_x64.exe",
-		"vpncmd.exe",
-		"vpncmd_x64.exe",
+		"elogmgr.exe",
+		"elogmgr_x64.exe",
 		"hamcore.se2",
 	};
 	// Validate arguments
@@ -6255,42 +5892,17 @@ void SwDefineComponents(SW *sw)
 		return;
 	}
 
-	// VPN Server
-	c = SwNewComponent(SW_NAME_VPNSERVER, GC_SVC_NAME_VPNSERVER, SW_CMP_VPN_SERVER, ICO_VPNSERVER, 5, (MsIsX64() ? L"vpnserver_x64.exe" : L"vpnserver.exe"),
-		SW_LONG_VPNSERVER, false, sizeof(vpn_server_files) / sizeof(char *), vpn_server_files,
-		(MsIsX64() ? L"vpnsmgr_x64.exe" : L"vpnsmgr.exe"), _UU("SW_RUN_TEXT_VPNSMGR"),
-		old_msi_vpnserver, sizeof(old_msi_vpnserver) / sizeof(SW_OLD_MSI));
-	Add(sw->ComponentList, c);
-
-	// VPN Client
-	c = SwNewComponent(SW_NAME_VPNCLIENT, GC_SVC_NAME_VPNCLIENT, SW_CMP_VPN_CLIENT, ICO_VPN, 6, (MsIsX64() ? L"vpnclient_x64.exe" : L"vpnclient.exe"),
-		SW_LONG_VPNCLIENT, true, sizeof(vpn_client_files) / sizeof(char *), vpn_client_files,
-		(MsIsX64() ? L"vpncmgr_x64.exe" : L"vpncmgr.exe"), _UU("SW_RUN_TEXT_VPNCMGR"),
-		old_msi_vpnclient, sizeof(old_msi_vpnclient) / sizeof(SW_OLD_MSI));
-
-#ifdef	GC_ENABLE_VPNGATE
-#endif	// GC_ENABLE_VPNGATE
-
-	Add(sw->ComponentList, c);
-
-	// VPN Bridge
-	c = SwNewComponent(SW_NAME_VPNBRIDGE, GC_SVC_NAME_VPNBRIDGE, SW_CMP_VPN_BRIDGE, ICO_CASCADE, 7, (MsIsX64() ? L"vpnbridge_x64.exe" : L"vpnbridge.exe"),
-		SW_LONG_VPNBRIDGE, false, sizeof(vpn_bridge_files) / sizeof(char *), vpn_bridge_files,
-		(MsIsX64() ? L"vpnsmgr_x64.exe" : L"vpnsmgr.exe"), _UU("SW_RUN_TEXT_VPNSMGR"),
-		old_msi_vpnbridge, sizeof(old_msi_vpnbridge) / sizeof(SW_OLD_MSI));
-	Add(sw->ComponentList, c);
-
-	// VPN Server Manager (Tools Only)
-	c = SwNewComponent(SW_NAME_VPNSMGR, NULL, SW_CMP_VPN_SMGR, ICO_USER_ADMIN, 8, NULL,
-		SW_LONG_VPNSMGR, false, sizeof(vpn_smgr_files) / sizeof(char *), vpn_smgr_files,
-		(MsIsX64() ? L"vpnsmgr_x64.exe" : L"vpnsmgr.exe"), _UU("SW_RUN_TEXT_VPNSMGR"),
+	// EtherLogger
+	c = SwNewComponent(SW_NAME_ELOG, GC_CSV_NAME_ELOG, SW_CMP_ELOG, ICO_NIC_ONLINE, 10, (MsIsX64() ? L"elogsvc_x64.exe" : L"elogsvc.exe"),
+		SW_LONG_ELOG, true, sizeof(elog_files) / sizeof(char *), elog_files,
+		(MsIsX64() ? L"elogmgr_x64.exe" : L"elogmgr.exe"), _UU("SW_RUN_TEXT_ELOGMGR"),
 		NULL, 0);
 	Add(sw->ComponentList, c);
 
-	// VPN Client Manager (Tools Only)
-	c = SwNewComponent(SW_NAME_VPNCMGR, NULL, SW_CMP_VPN_CMGR, ICO_INTERNET, 9, NULL,
-		SW_LONG_VPNCMGR, false, sizeof(vpn_cmgr_files) / sizeof(char *), vpn_cmgr_files,
-		(MsIsX64() ? L"vpncmgr_x64.exe /remote" : L"vpncmgr.exe /remote"), _UU("SW_RUN_TEXT_VPNCMGR"),
+	// EtherLogger Manager (Tools Only)
+	c = SwNewComponent(SW_NAME_ELOGMGR, NULL, SW_CMP_ELOGMGR, ICO_USER_ADMIN, 11, NULL,
+		SW_LONG_ELOGMGR, false, sizeof(elogmgr_files) / sizeof(char *), elogmgr_files,
+		(MsIsX64() ? L"elogmgr_x64.exe" : L"elogmgr.exe"), _UU("SW_RUN_TEXT_ELOGMGR"),
 		NULL, 0);
 	Add(sw->ComponentList, c);
 }

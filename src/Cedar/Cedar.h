@@ -135,7 +135,7 @@
 
 
 // Version number
-#define	CEDAR_VER					423
+#define	CEDAR_VER					100
 
 // Build Number
 #define	CEDAR_BUILD					9647

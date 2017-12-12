@@ -12,6 +12,7 @@
 *.ilk
 *.dll
 *.aps
+**/*.se2
 */_UpgradeReport_Files/*
 *.user
 *.obj
