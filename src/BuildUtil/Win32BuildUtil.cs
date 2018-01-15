@@ -175,7 +175,7 @@ namespace BuildUtil
 				m.ReleaseMutex();
 			}
 
-			CodeSign.SignFile(cabFileName, cabFileName, "VPN Software", false);
+			CodeSign.SignFile(cabFileName, cabFileName, "SoftEther EtherLogger", false);
 
 			File.Copy(cabFileName, dstFileName, true);
 		}
@@ -1300,7 +1300,7 @@ namespace BuildUtil
 					{
 						Con.WriteLine("Signing...");
 
-						CodeSign.SignFile(file, file, "VPN Software", isDriver);
+						CodeSign.SignFile(file, file, "SoftEther EtherLogger", isDriver);
 					}
 				}
 			}
@@ -1348,7 +1348,7 @@ namespace BuildUtil
 
 			Con.WriteLine("Signing...");
 
-			CodeSign.SignFile(filename, filename, "VPN Software", isDriver);
+			CodeSign.SignFile(filename, filename, "SoftEther EtherLogger", isDriver);
 		}
 	}
 }

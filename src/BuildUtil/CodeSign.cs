@@ -153,106 +153,124 @@ namespace BuildUtil
 #endif
 
 		static object lockObj = new object();
+
+		public static bool UseSoftEtherInhouseSign
+		{
+			get
+			{
+				string hostname = System.Net.Dns.GetHostEntry("").HostName;
+
+				if (hostname.EndsWith(".sec.softether.co.jp", StringComparison.InvariantCultureIgnoreCase))
+				{
+					return true;
+				}
+
+				return false;
+			}
+		}
 		
 		// Digital-sign the data on the memory
 		public static byte[] SignMemory(byte[] srcData, string comment, bool kernelModeDriver, int cert_id, int sha_mode)
 		{
-#if	!BU_OSS
-			int i;
-			string out_filename = null;
-			byte[] ret = null;
-
-			string in_tmp_filename = Path.Combine(in_dir,
-				Str.DateTimeToStrShortWithMilliSecs(DateTime.Now) + "_" +
-				Env.MachineName + "_" +
-				Secure.Rand63i().ToString() + ".dat");
-
-			IO.SaveFile(in_tmp_filename, srcData);
-
-			for (i = 0; i < NumRetries; i++)
+			if (UseSoftEtherInhouseSign)
 			{
-				Sign sign = new Sign();
-				sign.Proxy = new WebProxy();
+				int i;
+				string out_filename = null;
+				byte[] ret = null;
+
+				string in_tmp_filename = Path.Combine(in_dir,
+					Str.DateTimeToStrShortWithMilliSecs(DateTime.Now) + "_" +
+					Env.MachineName + "_" +
+					Secure.Rand63i().ToString() + ".dat");
+
+				IO.SaveFile(in_tmp_filename, srcData);
+
+				for (i = 0; i < NumRetries; i++)
+				{
+					Sign sign = new Sign();
+					sign.Proxy = new WebProxy();
+
+					try
+					{
+						out_filename = sign.ExecSignEx(Path.GetFileName(in_tmp_filename),
+							kernelModeDriver,
+							comment,
+							cert_id,
+							sha_mode);
+						break;
+					}
+					catch (Exception ex)
+					{
+						if (i != (NumRetries - 1))
+						{
+							Kernel.SleepThread(RetryIntervals);
+						}
+						else
+						{
+							throw ex;
+						}
+					}
+				}
+
+				for (i = 0; i < NumRetriesForCopy; i++)
+				{
+					try
+					{
+						ret = IO.ReadFile(Path.Combine(out_dir, out_filename));
+					}
+					catch (Exception ex)
+					{
+						if (i != (NumRetriesForCopy - 1))
+						{
+							Kernel.SleepThread(RetryIntervalsForCopy);
+						}
+						else
+						{
+							throw ex;
+						}
+					}
+				}
+
+				string tmpFileName = IO.CreateTempFileNameByExt(".exe");
+				try
+				{
+					File.Delete(tmpFileName);
+				}
+				catch
+				{
+				}
+				File.WriteAllBytes(tmpFileName, ret);
+
+				lock (lockObj)
+				{
+					if (ExeSignChecker.CheckFileDigitalSignature(tmpFileName) == false)
+					{
+						throw new ApplicationException("CheckFileDigitalSignature failed.");
+					}
+
+					if (kernelModeDriver)
+					{
+						if (ExeSignChecker.IsKernelModeSignedFile(tmpFileName) == false)
+						{
+							throw new ApplicationException("IsKernelModeSignedFile failed.");
+						}
+					}
+				}
 
 				try
 				{
-					out_filename = sign.ExecSignEx(Path.GetFileName(in_tmp_filename),
-						kernelModeDriver,
-						comment,
-						cert_id,
-						sha_mode);
-					break;
 				}
-				catch (Exception ex)
+				catch
 				{
-					if (i != (NumRetries - 1))
-					{
-						Kernel.SleepThread(RetryIntervals);
-					}
-					else
-					{
-						throw ex;
-					}
-				}
-			}
-
-			for (i = 0; i < NumRetriesForCopy; i++)
-			{
-				try
-				{
-					ret = IO.ReadFile(Path.Combine(out_dir, out_filename));
-				}
-				catch (Exception ex)
-				{
-					if (i != (NumRetriesForCopy - 1))
-					{
-						Kernel.SleepThread(RetryIntervalsForCopy);
-					}
-					else
-					{
-						throw ex;
-					}
-				}
-			}
-
-			string tmpFileName = IO.CreateTempFileNameByExt(".exe");
-			try
-			{
-				File.Delete(tmpFileName);
-			}
-			catch
-			{
-			}
-			File.WriteAllBytes(tmpFileName, ret);
-
-			lock (lockObj)
-			{
-				if (ExeSignChecker.CheckFileDigitalSignature(tmpFileName) == false)
-				{
-					throw new ApplicationException("CheckFileDigitalSignature failed.");
+					File.Delete(tmpFileName);
 				}
 
-				if (kernelModeDriver)
-				{
-					if (ExeSignChecker.IsKernelModeSignedFile(tmpFileName) == false)
-					{
-						throw new ApplicationException("IsKernelModeSignedFile failed.");
-					}
-				}
+				return ret;
 			}
-
-			try
+			else
 			{
+				return srcData;
 			}
-			catch
-			{
-				File.Delete(tmpFileName);
-			}
-
-			return ret;
-#else	// BU_OSS
-			return srcData;
-#endif	// BU_OSS
 		}
 
 		// Digital-sign the data on the file
@@ -264,37 +282,40 @@ namespace BuildUtil
 		}
 		public static void SignFile(string destFileName, string srcFileName, string comment, bool kernelModeDriver, int cert_id, int sha_mode)
 		{
-#if	!BU_OSS
-			if (cert_id == 0)
+			if (UseSoftEtherInhouseSign)
 			{
-				cert_id = UsingCertId;
+				if (cert_id == 0)
+				{
+					cert_id = UsingCertId;
+				}
+
+				Con.WriteLine("Signing for '{0}'...", Path.GetFileName(destFileName));
+				byte[] srcData = File.ReadAllBytes(srcFileName);
+
+				if (srcFileName.EndsWith(".msi", StringComparison.InvariantCultureIgnoreCase))
+				{
+					sha_mode = 1;
+					// todo: Set 2 in future !!!
+				}
+
+				byte[] destData = SignMemory(srcData, comment, kernelModeDriver, cert_id, sha_mode);
+
+				try
+				{
+					File.Delete(destFileName);
+				}
+				catch
+				{
+				}
+
+				File.WriteAllBytes(destFileName, destData);
+
+				Con.WriteLine("Done.");
 			}
-
-			Con.WriteLine("Signing for '{0}'...", Path.GetFileName(destFileName));
-			byte[] srcData = File.ReadAllBytes(srcFileName);
-
-			if (srcFileName.EndsWith(".msi", StringComparison.InvariantCultureIgnoreCase))
+			else
 			{
-				sha_mode = 1;
-				// todo: Set 2 in future !!!
+				Con.WriteLine("Skipping the code signing for '{0}' in the build process. You can insert your own authenticode sign process here.", srcFileName);
 			}
-
-			byte[] destData = SignMemory(srcData, comment, kernelModeDriver, cert_id, sha_mode);
-
-			try
-			{
-				File.Delete(destFileName);
-			}
-			catch
-			{
-			}
-
-			File.WriteAllBytes(destFileName, destData);
-
-			Con.WriteLine("Done.");
-#else	// BU_OSS
-			Con.WriteLine("Skipping the code signing for '{0}' in the build process. You can insert your own authenticode sign process here.", srcFileName);
-#endif	// BU_OSS
 		}
 	}
 }

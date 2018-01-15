@@ -154,12 +154,7 @@ namespace BuildUtil
 		{
 			ConsoleParam[] args =
 			{
-#if !BU_SOFTETHER
 				new ConsoleParam("[yes|no]", ConsoleService.Prompt, "Increments build number (y/n) ? ", ConsoleService.EvalNotEmpty, null),
-				new ConsoleParam("SEVPN", ConsoleService.Prompt, "Build SoftEther VPN automatically after PacketiX VPN Build (y/n) ? ", ConsoleService.EvalNotEmpty, null),
-#else
-				new ConsoleParam("[yes|no]"),
-#endif
 				new ConsoleParam("IGNOREERROR"),
 				new	ConsoleParam("DEBUG"),
 				new ConsoleParam("SERIAL"),

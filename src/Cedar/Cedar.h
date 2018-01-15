@@ -138,7 +138,7 @@
 #define	CEDAR_VER					100
 
 // Build Number
-#define	CEDAR_BUILD					9647
+#define	CEDAR_BUILD					9651
 
 // Beta number
 //#define	BETA_NUMBER					3
@@ -153,16 +153,16 @@
 
 // Specify the location to build
 #ifndef	BUILD_PLACE
-#define	BUILD_PLACE			"pc37"
+#define	BUILD_PLACE			"pc38"
 #endif	// BUILD_PLACE
 
 // Specifies the build date
-#define	BUILD_DATE_Y		2017
-#define	BUILD_DATE_M		10
-#define	BUILD_DATE_D		19
-#define	BUILD_DATE_HO		14
-#define	BUILD_DATE_MI		28
-#define	BUILD_DATE_SE		18
+#define	BUILD_DATE_Y		2018
+#define	BUILD_DATE_M		1
+#define	BUILD_DATE_D		15
+#define	BUILD_DATE_HO		16
+#define	BUILD_DATE_MI		39
+#define	BUILD_DATE_SE		50
 
 // Tolerable time difference
 #define	ALLOW_TIMESTAMP_DIFF		(UINT64)(3 * 24 * 60 * 60 * 1000)

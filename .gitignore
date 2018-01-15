@@ -32,3 +32,4 @@ UpgradeLog.XML
 UpgradeLog2.XML
 BuildLog.htm
 BuildUtilTmp.exe.config
+output/*

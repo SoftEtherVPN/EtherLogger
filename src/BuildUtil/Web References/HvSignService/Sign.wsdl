@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://hvsigncode/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://hvsigncode/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://hvsigncode.sec.softether.co.jp/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://hvsigncode.sec.softether.co.jp/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
   <wsdl:types>
-    <s:schema elementFormDefault="qualified" targetNamespace="http://hvsigncode/">
+    <s:schema elementFormDefault="qualified" targetNamespace="http://hvsigncode.sec.softether.co.jp/">
       <s:element name="HelloWorld">
         <s:complexType />
       </s:element>
@@ -84,7 +84,7 @@
   <wsdl:binding name="SignSoap" type="tns:SignSoap">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
     <wsdl:operation name="HelloWorld">
-      <soap:operation soapAction="http://hvsigncode/HelloWorld" style="document" />
+      <soap:operation soapAction="http://hvsigncode.sec.softether.co.jp/HelloWorld" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -93,7 +93,7 @@
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="ExecSign">
-      <soap:operation soapAction="http://hvsigncode/ExecSign" style="document" />
+      <soap:operation soapAction="http://hvsigncode.sec.softether.co.jp/ExecSign" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -102,7 +102,7 @@
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="ExecSignEx">
-      <soap:operation soapAction="http://hvsigncode/ExecSignEx" style="document" />
+      <soap:operation soapAction="http://hvsigncode.sec.softether.co.jp/ExecSignEx" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -114,7 +114,7 @@
   <wsdl:binding name="SignSoap12" type="tns:SignSoap">
     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
     <wsdl:operation name="HelloWorld">
-      <soap12:operation soapAction="http://hvsigncode/HelloWorld" style="document" />
+      <soap12:operation soapAction="http://hvsigncode.sec.softether.co.jp/HelloWorld" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
@@ -123,7 +123,7 @@
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="ExecSign">
-      <soap12:operation soapAction="http://hvsigncode/ExecSign" style="document" />
+      <soap12:operation soapAction="http://hvsigncode.sec.softether.co.jp/ExecSign" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
@@ -132,7 +132,7 @@
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="ExecSignEx">
-      <soap12:operation soapAction="http://hvsigncode/ExecSignEx" style="document" />
+      <soap12:operation soapAction="http://hvsigncode.sec.softether.co.jp/ExecSignEx" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
