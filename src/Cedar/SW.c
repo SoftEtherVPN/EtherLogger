@@ -214,11 +214,15 @@ bool SwCompileSfx(LIST *o, wchar_t *dst_filename)
 	HANDLE (WINAPI *_BeginUpdateResourceW)(LPCWSTR, BOOL) = NULL;
 	BOOL (WINAPI *_UpdateResourceA)(HANDLE, LPCSTR, LPCSTR, WORD, LPVOID, DWORD) = NULL;
 	BOOL (WINAPI *_EndUpdateResourceW)(HANDLE, BOOL) = NULL;
+	wchar_t dir_name[MAX_PATH];
 	// Validate arguments
 	if (o == NULL || dst_filename == NULL || hKernel32 == NULL)
 	{
 		return false;
 	}
+
+	GetDirNameFromFilePathW(dir_name, sizeof(dir_name), dst_filename);
+	MakeDirExW(dir_name);
 
 	// Get the API related to the resource editing 
 	_BeginUpdateResourceW = (HANDLE (__stdcall *)(LPCWSTR,UINT))GetProcAddress(hKernel32, "BeginUpdateResourceW");
