@@ -165,6 +165,8 @@ static SW_OLD_MSI old_msi_vpnbridge[] =
 // List of file names needed to SFX
 static char *sfx_elog_files[] =
 {
+	"vpnsetup.exe",
+	"vpnsetup_x64.exe",
 	"elogmgr.exe",
 	"elogmgr_x64.exe",
 	"elogsvc.exe",

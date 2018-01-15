@@ -3927,7 +3927,7 @@ R_SYSTEM				&System Mode (Recommended)
 R_USER					&User Mode
 S_1						Install the VPN software to this computer normally. The administrator privilege is required.
 S_USER					Install the VPN software with the normal user privilege. No administrator privilege is required. Some functions such as Local Bridge will be disabled. Runs only the user "%s" is logged on Windows.
-S_2						SoftEther VPN can be installed by one of two methods.\r\n\r\nPlease select the System Mode normally.\r\n\r\nIf you cannot use the administrator privilege for some reasons, you can select the User Mode to continue the installation.
+S_2						SoftEther EtherLogger can be installed by one of two methods.\r\n\r\nPlease select the System Mode normally.\r\n\r\nIf you cannot use the administrator privilege for some reasons, you can select the User Mode to continue the installation.
 
 
 PREFIX					D_SW_NOT_ADMIN

@@ -646,103 +646,11 @@ namespace BuildUtil
 				bat.Close();
 
 				ExecCommand(Paths.CmdFileName, string.Format("/C \"{0}\"", batFileName));
-
-				BuildReplaceHeader();
 			}
 			finally
 			{
 				x.ReleaseMutex();
 			}
-		}
-
-		// Generate the Replace.h
-		public static void BuildReplaceHeader()
-		{
-			List<string> o = new List<string>();
-			int maxLen = 0;
-
-			// Read the map file
-			string[] lines = File.ReadAllLines(Path.Combine(Paths.BaseDirName, @"DebugFiles\map\Win32_Release\vpnserver.map"));
-			char[] sps = { ' ', '\t', };
-
-			foreach (string line in lines)
-			{
-				string[] tokens = line.Trim().Split(sps, StringSplitOptions.RemoveEmptyEntries);
-
-				if (tokens.Length == 5)
-				{
-					if (tokens[0].StartsWith("0001:", StringComparison.InvariantCultureIgnoreCase))
-					{
-						if (tokens[0].Length == 13)
-						{
-							if (tokens[2].Length == 8)
-							{
-								if (tokens[3].Equals("f", StringComparison.InvariantCultureIgnoreCase))
-								{
-									if (tokens[4].StartsWith("Mayaqua:", StringComparison.InvariantCultureIgnoreCase) ||
-										tokens[4].StartsWith("Cedar:", StringComparison.InvariantCultureIgnoreCase))
-									{
-										string name = tokens[1];
-
-										if (name.Length >= 2)
-										{
-											if (Str.InStr(name, "mktime") == false &&
-												Str.InStr(name, "gmtime") == false &&
-												Str.InStr(name, "stdin") == false &&
-												Str.InStr(name, "stdout") == false &&
-												Str.InStr(name, "@") == false &&
-												Str.InStr(name, "localtime") == false)
-											{
-												string tmp = tokens[4].Split(':')[1];
-
-												if (tmp[0] >= 'A' && tmp[0] <= 'Z' &&
-													Str.InStr(tmp, "_") == false)
-												{
-													o.Add(name.Substring(1));
-
-													maxLen = Math.Max(maxLen, name.Length);
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-
-			o.Sort();
-
-			// Generate the Replace.h
-			string filename = Path.Combine(Paths.BaseDirName, @"DebugFiles\Replace.h");
-			StreamWriter w = new StreamWriter(filename);
-
-			w.WriteLine("// PacketiX VPN Function Name Replacement Header File");
-			w.WriteLine("//");
-			w.WriteLine("// Copyright (c) SoftEther Corporation.");
-			w.WriteLine("// All Rights Reserved.");
-			w.WriteLine("//");
-			w.WriteLine("// SoftEther Confidential");
-			w.WriteLine("//");
-			w.WriteLine();
-
-			foreach (string name in o)
-			{
-				if (Str.StrCmpi(name, "VLanGetPacketAdapter") == false)
-				{
-					string tmp = Str.ByteToHex(Secure.HashMD5(Str.Utf8Encoding.GetBytes("xx" + name)), "");
-					string tmp2 = "VPN_" + tmp.Substring(0, 12).ToUpper();
-
-					w.WriteLine("#define  {0,-" + maxLen.ToString() + "}  {1}",
-						name, tmp2);
-				}
-			}
-
-			w.WriteLine();
-
-			w.Flush();
-			w.Close();
 		}
 
 		// Command execution

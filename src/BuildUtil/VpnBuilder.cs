@@ -239,10 +239,10 @@ namespace BuildUtil
 
 			switch (soft)
 			{
-				case Software.vpnbridge:
-					ret = "PacketiX VPN Bridge";
+				case Software.elog:
+					ret = "SoftEther EtherLogger";
 					break;
-
+/*
 				case Software.vpnclient:
 					ret = "PacketiX VPN Client, PacketiX VPN Command-Line Admin Utility (vpncmd)";
 					break;
@@ -253,7 +253,7 @@ namespace BuildUtil
 
 				case Software.vpnserver_vpnbridge:
 					ret = "PacketiX VPN Server, PacketiX VPN Bridge, PacketiX VPN Server Manager for Windows, PacketiX VPN Command-Line Admin Utility (vpncmd)";
-					break;
+					break;*/
 
 				default:
 					throw new ApplicationException("invalid soft.");
@@ -273,10 +273,10 @@ namespace BuildUtil
 
 			switch (soft)
 			{
-				case Software.vpnbridge:
-					ret = "PacketiX VPN Bridge";
+				case Software.elog:
+					ret = "SoftEther EtherLogger";
 					break;
-
+/*
 				case Software.vpnclient:
 					ret = "PacketiX VPN Client";
 					break;
@@ -287,7 +287,7 @@ namespace BuildUtil
 
 				case Software.vpnserver_vpnbridge:
 					ret = "PacketiX VPN Server and VPN Bridge";
-					break;
+					break;*/
 
 				default:
 					throw new ApplicationException("invalid soft.");
@@ -328,7 +328,7 @@ namespace BuildUtil
 		public static readonly string VPN4SolutionFileName = Path.Combine(BaseDirName, "EtherLogger.sln");
 		public static readonly string DebugSnapshotBaseDir = IO.NormalizePath(Path.Combine(BaseDirName, @"..\output\debug"));
 		public static readonly string ReleaseDestDir = IO.NormalizePath(Path.Combine(BaseDirName, @"..\output\pkg"));
-		public const string Prefix = "softether_open-";
+		public const string Prefix = "";
 #endif
 #endif
 

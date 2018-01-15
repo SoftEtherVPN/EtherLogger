@@ -654,10 +654,10 @@ namespace BuildUtil
 			sr.WriteLine("\t-ranlib code/{0}.a", "vpncmd");
 			sr.WriteLine("\t$(CC) code/{0}.a $(OPTIONS) -o {0}", "vpncmd");
 
-			if (this.Software == Software.vpnserver_vpnbridge || this.Software == Software.vpnbridge || this.Software == Software.vpnserver)
+			/*if (this.Software == Software.vpnserver_vpnbridge || this.Software == Software.vpnbridge || this.Software == Software.vpnserver)
 			{
 				sr.WriteLine("\t./vpncmd /tool /cmd:Check");
-			}
+			}*/
 
 			Language[] langs = BuildHelper.GetLanguageList();
 

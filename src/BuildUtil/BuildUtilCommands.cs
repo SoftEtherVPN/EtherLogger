@@ -915,13 +915,6 @@ namespace BuildUtil
 			)]
 		static int CopyUnixSrc(ConsoleService c, string cmdName, string str)
 		{
-			ConsoleParam[] args =
-			{
-				new ConsoleParam("[destdir]", ConsoleService.Prompt, "Destination directory : ", ConsoleService.EvalNotEmpty, null),
-			};
-			ConsoleParamValueList vl = c.ParseCommandList(cmdName, str, args);
-
-			((BuildSoftwareUnix)BuildSoftwareList.vpnbridge_linux_x86_ja).CopyUnixSrc(vl.DefaultParam.StrValue);
 
 			return 0;
 		}

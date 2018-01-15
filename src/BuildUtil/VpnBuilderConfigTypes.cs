@@ -177,10 +177,7 @@ namespace BuildUtil
 	// Type of software
 	public enum Software
 	{
-		vpnserver,
-		vpnbridge,
-		vpnclient,
-		vpnserver_vpnbridge,
+		elog,
 	}
 
 	// Class to build the software
