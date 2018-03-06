@@ -201,6 +201,7 @@ struct EL
 	LICENSE_SYSTEM *LicenseSystem;		// License system
 	EL_LICENSE_STATUS *LicenseStatus;	// License status
 	UINT64 AutoDeleteCheckDiskFreeSpaceMin;	// Minimum free disk space
+	bool DisableLogEraser;
 	ERASER *Eraser;						// Eraser
 };
 

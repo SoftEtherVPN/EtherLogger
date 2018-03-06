@@ -1210,6 +1210,8 @@ void ElSaveConfigToFolder(EL *e, FOLDER *root)
 
 	CfgAddInt64(root, "AutoDeleteCheckDiskFreeSpaceMin", e->AutoDeleteCheckDiskFreeSpaceMin);
 
+	CfgAddBool(root, "DisableLogEraser", e->DisableLogEraser);
+
 	CfgAddInt(root, "AdminPort", e->Port);
 
 	CfgAddByte(root, "AdminPassword", e->HashedPassword, sizeof(e->HashedPassword));
@@ -1268,6 +1270,8 @@ void ElLoadConfigFromFolder(EL *e, FOLDER *root)
 			e->AutoDeleteCheckDiskFreeSpaceMin = DISK_FREE_SPACE_MIN;
 		}
 	}
+
+	e->DisableLogEraser = CfgGetBool(root, "DisableLogEraser");
 
 	if (CfgGetByte(root, "AdminPassword", e->HashedPassword, sizeof(e->HashedPassword)) != sizeof(e->HashedPassword))
 	{
@@ -1475,7 +1479,10 @@ EL *NewEl()
 	ElParseCurrentLicenseStatus(e->LicenseSystem, e->LicenseStatus);
 
 	// Eraser start
-	e->Eraser = NewEraser(NULL, e->AutoDeleteCheckDiskFreeSpaceMin);
+	if (e->DisableLogEraser == false)
+	{
+		e->Eraser = NewEraser(NULL, e->AutoDeleteCheckDiskFreeSpaceMin);
+	}
 
 	return e;
 }
