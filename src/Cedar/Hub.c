@@ -2626,35 +2626,46 @@ bool ApplyAccessListToForwardPacket(HUB *hub, SESSION *src_session, SESSION *des
 		return true;
 	}
 
-	LockList(hub->AccessList);
+	if (true)
 	{
-		for (i = 0;i < LIST_NUM(hub->AccessList);i++)
+		UCHAR *copy_buf = Clone(p->PacketData, p->PayloadSize);
+		UINT copy_size = p->PayloadSize;
+		PKT *p2 = ParsePacketEx5(copy_buf, copy_size, false, 0, false, false, false, true);
+
+		p = p2;
+
+		LockList(hub->AccessList);
 		{
-			ACCESS *a = LIST_DATA(hub->AccessList, i);
-
-			// Scan the entry only after the destination user name is specified.
-			if (a->DestUsernameHash != 0)
+			for (i = 0;i < LIST_NUM(hub->AccessList);i++)
 			{
-				skip = false;
-			}
+				ACCESS *a = LIST_DATA(hub->AccessList, i);
 
-			if (skip == false)
-			{
-				if (IsPacketMaskedByAccessList(src_session, p, a,
-					((HUB_PA *)dest_session->PacketAdapter->Param)->UsernameHash,
-					((HUB_PA *)dest_session->PacketAdapter->Param)->GroupnameHash,
-					dest_session))
+				// Scan the entry only after the destination user name is specified.
+				if (a->DestUsernameHash != 0)
 				{
-					// Determine the pass or discard the packet
-					pass = a->Discard ? false : true;
+					skip = false;
+				}
 
-					// Complete the scanning of the list here
-					break;
+				if (skip == false)
+				{
+					if (IsPacketMaskedByAccessList(src_session, p, a,
+						((HUB_PA *)dest_session->PacketAdapter->Param)->UsernameHash,
+						((HUB_PA *)dest_session->PacketAdapter->Param)->GroupnameHash,
+						dest_session))
+					{
+						// Determine the pass or discard the packet
+						pass = a->Discard ? false : true;
+
+						// Complete the scanning of the list here
+						break;
+					}
 				}
 			}
 		}
+		UnlockList(hub->AccessList);
+
+		FreePacket(p2);
 	}
-	UnlockList(hub->AccessList);
 
 	return pass;
 }
@@ -2960,43 +2971,94 @@ bool ApplyAccessListToStoredPacket(HUB *hub, SESSION *s, PKT *p)
 		}
 	}
 
-	LockList(hub->AccessList);
+	if (true)
 	{
-		for (i = 0;i < LIST_NUM(hub->AccessList);i++)
+		UCHAR *copy_buf = Clone(p->PacketData, p->PayloadSize);
+		UINT copy_size = p->PayloadSize;
+		PKT *p2 = ParsePacketEx5(copy_buf, copy_size, false, 0, false, false, false, true);
+
+		p = p2;
+
+		LockList(hub->AccessList);
 		{
-			ACCESS *a = LIST_DATA(hub->AccessList, i);
-
-			if (a->DestUsernameHash != 0)
+			for (i = 0;i < LIST_NUM(hub->AccessList);i++)
 			{
-				// If a destination user name is specified, suspend the scanning of the list.
-				break;
-			}
+				ACCESS *a = LIST_DATA(hub->AccessList, i);
 
-			if (IsPacketMaskedByAccessList(s, p, a, 0, 0, NULL))
-			{
-				// Determine the pass or discard the packet
-				pass = a->Discard ? false : true;
-
-				// Packets determined processing here is not scanned when leaving the HUB.
-				p->AccessChecked = true;
-
-				// Copy of the parameters of the delay jitter packet loss
-				p->Delay = a->Delay;
-				p->Jitter = a->Jitter;
-				p->Loss = a->Loss;
-
-				if (a->RedirectUrl[0] != 0)
+				if (a->DestUsernameHash != 0)
 				{
-					// There is a setting of URL redirection in the access list
-					if ((p->TypeL3 == L3_IPV4 || p->TypeL3 == L3_IPV6) &&
-						p->TypeL4 == L4_TCP)
-					{
-						TCP_HEADER *tcp = p->L4.TCPHeader;
+					// If a destination user name is specified, suspend the scanning of the list.
+					break;
+				}
 
-						// Examine whether this packet is a TCP data packet
-						if (tcp != NULL)
+				if (IsPacketMaskedByAccessList(s, p, a, 0, 0, NULL))
+				{
+					// Determine the pass or discard the packet
+					pass = a->Discard ? false : true;
+
+					// Packets determined processing here is not scanned when leaving the HUB.
+					p->AccessChecked = true;
+
+					// Copy of the parameters of the delay jitter packet loss
+					p->Delay = a->Delay;
+					p->Jitter = a->Jitter;
+					p->Loss = a->Loss;
+
+					if (a->RedirectUrl[0] != 0)
+					{
+						// There is a setting of URL redirection in the access list
+						if ((p->TypeL3 == L3_IPV4 || p->TypeL3 == L3_IPV6) &&
+							p->TypeL4 == L4_TCP)
 						{
-							if (tcp->Flag & TCP_ACK)
+							TCP_HEADER *tcp = p->L4.TCPHeader;
+
+							// Examine whether this packet is a TCP data packet
+							if (tcp != NULL)
+							{
+								if (tcp->Flag & TCP_ACK)
+								{
+									if ((tcp->Flag & TCP_SYN) == 0 &&
+										(tcp->Flag & TCP_RST) == 0 &&
+										(tcp->Flag & TCP_URG) == 0)
+									{
+										if (p->PayloadSize != 0)
+										{
+											// Do URL redirection
+											use_redirect_url = true;
+											StrCpy(redirect_url, sizeof(redirect_url), a->RedirectUrl);
+										}
+									}
+								}
+							}
+						}
+					}
+
+					// Complete the scanning of the list here
+					break;
+				}
+			}
+		}
+		UnlockList(hub->AccessList);
+
+		if (pass)
+		{
+			if (s != NULL && s->FirstTimeHttpRedirect && s->FirstTimeHttpAccessCheckIp != 0)
+			{
+				if ((p->TypeL3 == L3_IPV4 || p->TypeL3 == L3_IPV6) &&
+					p->TypeL4 == L4_TCP)
+				{
+					TCP_HEADER *tcp = p->L4.TCPHeader;
+
+					// Examine whether this packet is a TCP data packet
+					if (tcp != NULL)
+					{
+						if (tcp->DstPort == Endian16(80))
+						{
+							if (p->L3.IPv4Header->DstIP == s->FirstTimeHttpAccessCheckIp)
+							{
+								s->FirstTimeHttpRedirect = false;
+							}
+							else if (tcp->Flag & TCP_ACK)
 							{
 								if ((tcp->Flag & TCP_SYN) == 0 &&
 									(tcp->Flag & TCP_RST) == 0 &&
@@ -3004,59 +3066,17 @@ bool ApplyAccessListToStoredPacket(HUB *hub, SESSION *s, PKT *p)
 								{
 									if (p->PayloadSize != 0)
 									{
-										// Do URL redirection
-										use_redirect_url = true;
-										StrCpy(redirect_url, sizeof(redirect_url), a->RedirectUrl);
-									}
-								}
-							}
-						}
-					}
-				}
-
-				// Complete the scanning of the list here
-				break;
-			}
-		}
-	}
-	UnlockList(hub->AccessList);
-
-	if (pass)
-	{
-		if (s != NULL && s->FirstTimeHttpRedirect && s->FirstTimeHttpAccessCheckIp != 0)
-		{
-			if ((p->TypeL3 == L3_IPV4 || p->TypeL3 == L3_IPV6) &&
-				p->TypeL4 == L4_TCP)
-			{
-				TCP_HEADER *tcp = p->L4.TCPHeader;
-
-				// Examine whether this packet is a TCP data packet
-				if (tcp != NULL)
-				{
-					if (tcp->DstPort == Endian16(80))
-					{
-						if (p->L3.IPv4Header->DstIP == s->FirstTimeHttpAccessCheckIp)
-						{
-							s->FirstTimeHttpRedirect = false;
-						}
-						else if (tcp->Flag & TCP_ACK)
-						{
-							if ((tcp->Flag & TCP_SYN) == 0 &&
-								(tcp->Flag & TCP_RST) == 0 &&
-								(tcp->Flag & TCP_URG) == 0)
-							{
-								if (p->PayloadSize != 0)
-								{
-									if (IsTcpPacketNcsiHttpAccess(p) == false)
-									{
-/*										char tmp[4000];
-										Zero(tmp, sizeof(tmp));
-										Copy(tmp, p->Payload, p->PayloadSize);
-										Debug("HTTP: %s\n", tmp);*/
-										if (IsEmptyStr(s->FirstTimeHttpRedirectUrl) == false)
+										if (IsTcpPacketNcsiHttpAccess(p) == false)
 										{
-											use_redirect_url = true;
-											StrCpy(redirect_url, sizeof(redirect_url), s->FirstTimeHttpRedirectUrl);
+	/*										char tmp[4000];
+											Zero(tmp, sizeof(tmp));
+											Copy(tmp, p->Payload, p->PayloadSize);
+											Debug("HTTP: %s\n", tmp);*/
+											if (IsEmptyStr(s->FirstTimeHttpRedirectUrl) == false)
+											{
+												use_redirect_url = true;
+												StrCpy(redirect_url, sizeof(redirect_url), s->FirstTimeHttpRedirectUrl);
+											}
 										}
 									}
 								}
@@ -3066,23 +3086,25 @@ bool ApplyAccessListToStoredPacket(HUB *hub, SESSION *s, PKT *p)
 				}
 			}
 		}
-	}
 
-	if (use_redirect_url)
-	{
-		if (s->NormalClient)
+		if (use_redirect_url)
 		{
-			// In the case of a normal VPN client (Not a local bridge, a SecureNAT, and not a virtual L3 switch),
-			// process URL redirection and discard the packet
-			ForceRedirectToUrl(hub, s, p, redirect_url);
-		}
-		else
-		{
-			// Discard packets that is sent from the sessions such as local bridge,
-			// SecureNAT, virtual L3 switch
+			if (s->NormalClient)
+			{
+				// In the case of a normal VPN client (Not a local bridge, a SecureNAT, and not a virtual L3 switch),
+				// process URL redirection and discard the packet
+				ForceRedirectToUrl(hub, s, p, redirect_url);
+			}
+			else
+			{
+				// Discard packets that is sent from the sessions such as local bridge,
+				// SecureNAT, virtual L3 switch
+			}
+
+			pass = false;
 		}
 
-		pass = false;
+		FreePacketWithData(p2);
 	}
 
 	return pass;
@@ -3804,7 +3826,7 @@ bool HubPaPutPacket(SESSION *s, void *data, UINT size)
 
 LABEL_TRY_AGAIN:
 	// Parse the packet
-	packet = ParsePacketEx5(data, size, no_l3, vlan_type_id, !no_look_bpdu_bridge_id, no_http, !no_correct_checksum, true);
+	packet = ParsePacketEx5(data, size, no_l3, vlan_type_id, !no_look_bpdu_bridge_id, no_http, !no_correct_checksum, false);
 
 	if (packet != NULL)
 	{
