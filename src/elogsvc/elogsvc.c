@@ -12,12 +12,14 @@
 void StartProcess()
 {
 	InitCedar();
-	ElStart();
+	StInit();
+	StStartServer(false);
 }
 
 void StopProcess()
 {
-	ElStop();
+	StStopServer();
+	StFree();
 	FreeCedar();
 }
 

@@ -83,13 +83,15 @@ void em_test(UINT num, char **arg)
 
 void el_test(UINT num, char *arg[])
 {
-	Print("EtherLogger Service Test\n\n");
+	Print("EtherLogger Bridge Service Test\n\n");
 
-	ElInit();
-	ElStart();
+	StInit();
+	StStartServer(false);
+
 	GetLine(NULL, 0);
-	ElStop();
-	ElFree();
+
+	StStopServer();
+	StFree();
 }
 
 TEST_LIST test_list[] =
