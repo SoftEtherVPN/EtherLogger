@@ -2976,6 +2976,7 @@ bool ApplyAccessListToStoredPacket(HUB *hub, SESSION *s, PKT *p)
 		UCHAR *copy_buf = Clone(p->PacketData, p->PayloadSize);
 		UINT copy_size = p->PayloadSize;
 		PKT *p2 = ParsePacketEx5(copy_buf, copy_size, false, 0, false, false, false, true);
+		PKT *p_original = p;
 
 		p = p2;
 
@@ -2997,7 +2998,7 @@ bool ApplyAccessListToStoredPacket(HUB *hub, SESSION *s, PKT *p)
 					pass = a->Discard ? false : true;
 
 					// Packets determined processing here is not scanned when leaving the HUB.
-					p->AccessChecked = true;
+					p_original->AccessChecked = true;
 
 					// Copy of the parameters of the delay jitter packet loss
 					p->Delay = a->Delay;
