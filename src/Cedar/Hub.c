@@ -3804,7 +3804,7 @@ bool HubPaPutPacket(SESSION *s, void *data, UINT size)
 
 LABEL_TRY_AGAIN:
 	// Parse the packet
-	packet = ParsePacketEx4(data, size, no_l3, vlan_type_id, !no_look_bpdu_bridge_id, no_http, !no_correct_checksum);
+	packet = ParsePacketEx5(data, size, no_l3, vlan_type_id, !no_look_bpdu_bridge_id, no_http, !no_correct_checksum, true);
 
 	if (packet != NULL)
 	{
