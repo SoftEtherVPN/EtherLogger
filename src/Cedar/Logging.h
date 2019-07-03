@@ -227,6 +227,7 @@ void SetLogDirName(LOG *g, char *dir);
 void SetLogPrefix(LOG *g, char *prefix);
 void SetLogSwitchType(LOG *g, UINT switch_type);
 bool PacketLog(HUB *hub, SESSION *src_session, SESSION *dest_session, PKT *packet, UINT64 now);
+bool PacketLogReparse(HUB *hub, SESSION *src_session, SESSION *dest_session, PKT *packet, UINT64 now);
 char *PacketLogParseProc(RECORD *rec);
 UINT CalcPacketLoggingLevel(HUB *hub, PKT *packet);
 UINT CalcPacketLoggingLevelEx(HUB_LOG *g, PKT *packet);
