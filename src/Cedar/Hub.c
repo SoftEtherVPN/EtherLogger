@@ -2628,8 +2628,8 @@ bool ApplyAccessListToForwardPacket(HUB *hub, SESSION *src_session, SESSION *des
 
 	if (true)
 	{
-		UCHAR *copy_buf = Clone(p->PacketData, p->PayloadSize);
-		UINT copy_size = p->PayloadSize;
+		UCHAR *copy_buf = Clone(p->PacketData, p->PacketSize);
+		UINT copy_size = p->PacketSize;
 		PKT *p2 = ParsePacketEx5(copy_buf, copy_size, false, 0, false, false, false, true);
 
 		p = p2;
@@ -2664,7 +2664,7 @@ bool ApplyAccessListToForwardPacket(HUB *hub, SESSION *src_session, SESSION *des
 		}
 		UnlockList(hub->AccessList);
 
-		FreePacket(p2);
+		FreePacketWithData(p2);
 	}
 
 	return pass;
@@ -2973,11 +2973,10 @@ bool ApplyAccessListToStoredPacket(HUB *hub, SESSION *s, PKT *p)
 
 	if (true)
 	{
-		UCHAR *copy_buf = Clone(p->PacketData, p->PayloadSize);
-		UINT copy_size = p->PayloadSize;
+		UCHAR *copy_buf = Clone(p->PacketData, p->PacketSize);
+		UINT copy_size = p->PacketSize;
 		PKT *p2 = ParsePacketEx5(copy_buf, copy_size, false, 0, false, false, false, true);
 		PKT *p_original = p;
-
 		p = p2;
 
 		LockList(hub->AccessList);
@@ -5041,7 +5040,7 @@ UPDATE_FDB:
 						// Take a packet log
 						if (s != NULL)
 						{
-							if (PacketLog(s->Hub, s, dest_session, packet, now) == false)
+							if (PacketLogReparse(s->Hub, s, dest_session, packet, now) == false)
 							{
 								// The packet drops because it have exceeded the allowable amount
 								goto DISCARD_UNICAST_PACKET;
@@ -5065,7 +5064,7 @@ DISCARD_UNICAST_PACKET:
 					// Take a packet log
 					if (s != NULL)
 					{
-						if (PacketLog(s->Hub, s, NULL, packet, now) == false)
+						if (PacketLogReparse(s->Hub, s, NULL, packet, now) == false)
 						{
 							// The packet drops because It have exceeded the allowable amount
 							goto DISCARD_BROADCAST_PACKET;

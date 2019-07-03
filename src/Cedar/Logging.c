@@ -1052,6 +1052,23 @@ void WriteSecurityLog(HUB *h, char *str)
 	InsertStringRecord(h->SecurityLogger, str);
 }
 
+bool PacketLogReparse(HUB *hub, SESSION *src_session, SESSION *dest_session, PKT *packet, UINT64 now)
+{
+	bool ret = false;
+	UCHAR *copy_buf = Clone(packet->PacketData, packet->PacketSize);
+	UINT copy_size = packet->PacketSize;
+	PKT *p2 = ParsePacketEx5(copy_buf, copy_size, false, 0, false, false, false, true);
+
+	if (p2 != NULL)
+	{
+		ret = PacketLog(hub, src_session, dest_session, p2, now);
+	}
+
+	FreePacketWithData(p2);
+
+	return ret;
+}
+
 // Take a packet log
 bool PacketLog(HUB *hub, SESSION *src_session, SESSION *dest_session, PKT *packet, UINT64 now)
 {
