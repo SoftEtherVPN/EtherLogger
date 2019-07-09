@@ -226,6 +226,8 @@ void HubLoadFilterStringList(HUB *h)
 					FreeBuf(LIST_DATA(h->FilterStringsList, i));
 				}
 
+				DeleteAll(h->FilterStringsList);
+
 				while (true)
 				{
 					char *str = CfgReadNextLine(b);
@@ -248,7 +250,10 @@ void HubLoadFilterStringList(HUB *h)
 							data = NewBufFromMemory(str, StrLen(str));
 						}
 
-						Add(h->FilterStringsList, data);
+						if (data != NULL)
+						{
+							Add(h->FilterStringsList, data);
+						}
 					}
 
 					Free(str);
