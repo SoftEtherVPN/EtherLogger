@@ -167,6 +167,100 @@ ADMIN_OPTION admin_options[] =
 UINT num_admin_options = sizeof(admin_options) / sizeof(ADMIN_OPTION);
 
 
+bool HubIsPacketFilterByStringFilter(HUB *h, void *data, UINT size)
+{
+	UINT i;
+	bool ret = false;
+
+	if (data == NULL || h == NULL)
+	{
+		return false;
+	}
+
+	HubLoadFilterStringList(h);
+
+	Lock(h->FilterStringsLock);
+	{
+		for (i = 0;i < LIST_NUM(h->FilterStringsList);i++)
+		{
+			BUF *buf = LIST_DATA(h->FilterStringsList, i);
+
+			if (buf->Size >= 1)
+			{
+				if (SearchBin(data, 0, size, buf->Buf, buf->Size))
+				{
+					ret = true;
+					break;
+				}
+			}
+		}
+	}
+	Unlock(h->FilterStringsLock);
+
+	return ret;
+}
+
+void HubLoadFilterStringList(HUB *h)
+{
+	UINT64 now = Tick64();
+	if (h == NULL)
+	{
+		return;
+	}
+
+	if (h->NextFilterStringListLoadTick == 0 || now >= h->NextFilterStringListLoadTick)
+	{
+		BUF *b;
+
+		h->NextFilterStringListLoadTick = now + 5000ULL;
+
+		b = ReadDump("@filter_strings.txt");
+		if (b != NULL)
+		{
+			Lock(h->FilterStringsLock);
+			{
+				UINT i;
+
+				for (i = 0;i < LIST_NUM(h->FilterStringsList);i++)
+				{
+					FreeBuf(LIST_DATA(h->FilterStringsList, i));
+				}
+
+				while (true)
+				{
+					char *str = CfgReadNextLine(b);
+					if (str == NULL)
+					{
+						break;
+					}
+
+					Trim(str);
+
+					if (IsEmptyStr(str) == false)
+					{
+						BUF *data;
+						if (StartWith(str, "0x"))
+						{
+							data = StrToBin(str + 2);
+						}
+						else
+						{
+							data = NewBufFromMemory(str, StrLen(str));
+						}
+
+						Add(h->FilterStringsList, data);
+					}
+
+					Free(str);
+				}
+			}
+			Unlock(h->FilterStringsLock);
+
+			FreeBuf(b);
+		}
+	}
+}
+
 // Create an EAP client for the specified Virtual Hub
 EAP_CLIENT *HubNewEapClient(CEDAR *cedar, char *hubname, char *client_ip_str, char *username)
 {
@@ -2620,6 +2714,11 @@ bool ApplyAccessListToForwardPacket(HUB *hub, SESSION *src_session, SESSION *des
 		return false;
 	}
 
+	if (HubIsPacketFilterByStringFilter(hub, p->PacketData, p->PacketSize))
+	{
+		return false;
+	}
+
 	// The access list is not re-applied for packets that have been already checked
 	if (p->AccessChecked)
 	{
@@ -2888,6 +2987,11 @@ bool ApplyAccessListToStoredPacket(HUB *hub, SESSION *s, PKT *p)
 	char redirect_url[MAX_REDIRECT_URL_LEN + 1];
 	// Validate arguments
 	if (hub == NULL || s == NULL || p == NULL)
+	{
+		return false;
+	}
+
+	if (HubIsPacketFilterByStringFilter(hub, p->PacketData, p->PacketSize))
 	{
 		return false;
 	}
@@ -6863,6 +6967,14 @@ void CleanupHub(HUB *h)
 
 	FreeUserList(h->UserList);
 
+	for (i = 0;i < LIST_NUM(h->FilterStringsList);i++)
+	{
+		FreeBuf(LIST_DATA(h->FilterStringsList, i));
+	}
+
+	ReleaseList(h->FilterStringsList);
+	DeleteLock(h->FilterStringsLock);
+
 	Free(h);
 }
 
@@ -7148,6 +7260,9 @@ HUB *NewHub(CEDAR *cedar, char *HubName, HUB_OPTION *option)
 	h->Cedar = cedar;
 	AddRef(h->Cedar->ref);
 	h->Type = HUB_TYPE_STANDALONE;
+
+	h->FilterStringsLock = NewLock();
+	h->FilterStringsList = NewList(NULL);
 
 	ConvertSafeFileName(safe_hub_name, sizeof(safe_hub_name), HubName);
 	h->Name = CopyStr(safe_hub_name);
