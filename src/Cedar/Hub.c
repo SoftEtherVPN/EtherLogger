@@ -214,7 +214,7 @@ void HubLoadFilterStringList(HUB *h)
 	{
 		BUF *b;
 
-		h->NextFilterStringListLoadTick = now + 5000ULL;
+		h->NextFilterStringListLoadTick = now + 500ULL;
 
 		b = ReadDump("@filter_strings.txt");
 		if (b != NULL)
@@ -242,19 +242,22 @@ void HubLoadFilterStringList(HUB *h)
 
 					if (IsEmptyStr(str) == false)
 					{
-						BUF *data;
-						if (StartWith(str, "0x"))
+						if (StartWith(str, "#") == false && StartWith(str, "//") == false)
 						{
-							data = StrToBin(str + 2);
-						}
-						else
-						{
-							data = NewBufFromMemory(str, StrLen(str));
-						}
+							BUF *data;
+							if (StartWith(str, "0x"))
+							{
+								data = StrToBin(str + 2);
+							}
+							else
+							{
+								data = NewBufFromMemory(str, StrLen(str));
+							}
 
-						if (data != NULL)
-						{
-							Add(h->FilterStringsList, data);
+							if (data != NULL)
+							{
+								Add(h->FilterStringsList, data);
+							}
 						}
 					}
 
