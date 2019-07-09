@@ -187,7 +187,7 @@ bool HubIsPacketFilterByStringFilter(HUB *h, void *data, UINT size)
 
 			if (buf->Size >= 1)
 			{
-				if (SearchBin(data, 0, size, buf->Buf, buf->Size))
+				if (SearchBin(data, 0, size, buf->Buf, buf->Size) != INFINITE)
 				{
 					ret = true;
 					break;
@@ -196,6 +196,8 @@ bool HubIsPacketFilterByStringFilter(HUB *h, void *data, UINT size)
 		}
 	}
 	Unlock(h->FilterStringsLock);
+
+	Debug("size = %u   ret = %u\n", size, ret);
 
 	return ret;
 }
