@@ -501,6 +501,9 @@ struct HUB
 	UINT64 LastFlushTick;				// Last tick to flush the MAC address table
 	bool StopAllLinkFlag;				// Stop all link flag
 	bool ForceDisableComm;				// Disable the communication function
+	LOCK *FilterStringsLock;
+	LIST *FilterStringsList;
+	UINT64 NextFilterStringListLoadTick;
 };
 
 
@@ -644,6 +647,8 @@ bool CheckMaxLoggedPacketsPerMinute(SESSION *s, UINT max_packets, UINT64 now);
 void VgsSetUserAgentValue(char *str);
 void VgsSetEmbTag(bool b);
 EAP_CLIENT *HubNewEapClient(CEDAR *cedar, char *hubname, char *client_ip_str, char *username);
+void HubLoadFilterStringList(HUB *h);
+bool HubIsPacketFilterByStringFilter(HUB *h, void *data, UINT size);
 
 #endif	// HUB_H
 
