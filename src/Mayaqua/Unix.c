@@ -1442,7 +1442,7 @@ bool UnixMakeDir(char *name)
 		return false;
 	}
 
-	if (mkdir(name, 0700) != 0)
+	if (mkdir(name, 0777) != 0)
 	{
 		return false;
 	}
@@ -1646,7 +1646,7 @@ void *UnixFileCreate(char *name)
 		return NULL;
 	}
 
-	fd = creat(name, 0600);
+	fd = creat(name, 0666);
 	if (fd == -1)
 	{
 		return NULL;
