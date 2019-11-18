@@ -1646,7 +1646,7 @@ void *UnixFileCreate(char *name)
 		return NULL;
 	}
 
-	fd = creat(name, 0666);
+	fd = creat(name, 0644);
 	if (fd == -1)
 	{
 		return NULL;
