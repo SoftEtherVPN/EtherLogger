@@ -1175,26 +1175,29 @@ void ElInitConfig(EL *e)
 	ElLoadConfig(e);
 
 	// Write configuration file
+	// 2021/03/27 Disabled
 	ElSaveConfig(e);
 }
 
 // Write the configuration
 void ElSaveConfig(EL *e)
 {
-	FOLDER *root;
-	// Validate arguments
-	if (e == NULL)
-	{
-		return;
-	}
+	// 2021/03/27 Disabled
 
-	root = CfgCreateFolder(NULL, TAG_ROOT);
+	//FOLDER *root;
+	//// Validate arguments
+	//if (e == NULL)
+	//{
+	//	return;
+	//}
 
-	ElSaveConfigToFolder(e, root);
+	//root = CfgCreateFolder(NULL, TAG_ROOT);
 
-	SaveCfgRw(e->CfgRw, root);
+	//ElSaveConfigToFolder(e, root);
 
-	CfgDeleteFolder(root);
+	//SaveCfgRw(e->CfgRw, root);
+
+	//CfgDeleteFolder(root);
 }
 
 // Write the configuration to the folder
@@ -1473,7 +1476,8 @@ EL *NewEl()
 	ElInitConfig(e);
 
 	// Listener start
-	ElStartListener(e);
+	// 2021/03/27 Disabled
+	//ElStartListener(e);
 
 	// Initialize the license status
 	ElParseCurrentLicenseStatus(e->LicenseSystem, e->LicenseStatus);
